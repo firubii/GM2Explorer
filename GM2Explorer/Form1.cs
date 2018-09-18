@@ -38,11 +38,39 @@ namespace GM2Explorer
 
         public void ReadData(string path)
         {
+            if (wavOutput != null) wavOutput.Dispose();
+            if (wavFile != null) wavFile.Dispose();
+            if (vorbisFile != null) vorbisFile.Dispose();
+            loadedAudio = new byte[] { };
+            isOgg = false;
+            audioList.Nodes.Clear();
+            texList.Items.Clear();
+            TXTR.Clear();
+            AUDO.Clear();
             int texOffset = 0x8;
             statusProgress.Value = 0;
             this.Enabled = false;
             this.Cursor = Cursors.WaitCursor;
-            byte[] file = File.ReadAllBytes(path + "\\data.win");
+            byte[] file = { };
+            if (File.Exists(path + "\\data.win"))
+            {
+                file = File.ReadAllBytes(path + "\\data.win");
+            }
+            else
+            {
+                string[] exes = Directory.GetFiles(path, path.Split('\\').Last().Replace(" ", "") + ".exe");
+                file = File.ReadAllBytes(exes[0]);
+                for (int i = 0; i < file.Length; i++)
+                {
+                    uint FORMmagic = BitConverter.ToUInt32(file, i);
+                    uint GEN8magic = BitConverter.ToUInt32(file, i + 0x8);
+                    if (FORMmagic == 1297239878 && GEN8magic == 944653639)
+                    {
+                        file = file.Skip(i).ToArray();
+                        break;
+                    }
+                }
+            }
             switch (BitConverter.ToUInt32(file, 0x10))
             {
                 case 4353:
@@ -64,7 +92,7 @@ namespace GM2Explorer
                 {
                     magic = BitConverter.ToUInt32(file, i);
                 }
-                if (magic == 0x52545854)
+                if (magic == 1381259348) //TXTR
                 {
                     //Console.WriteLine("Found TXTR Section at 0x" + i.ToString("X8"));
                     uint size = BitConverter.ToUInt32(file, i + 0x4);
@@ -93,9 +121,13 @@ namespace GM2Explorer
                         MemoryStream stream = new MemoryStream(tex.ToArray());
                         Image img = Image.FromStream(stream);
                         TXTR.Add(new Bitmap(img));
+                        stream.Dispose();
+                        img.Dispose();
+                        tex.Clear();
                     }
+                    fileOffsets.Clear();
                 }
-                else if (magic == 0x4F445541)
+                else if (magic == 1329878337) //AUDO
                 {
                     audioList.Nodes.Add("data.win");
                     AUDOstruct audo;
@@ -123,10 +155,12 @@ namespace GM2Explorer
                         audio.Clear();
                     }
                     AUDO.Add(audo);
+                    fileOffsets.Clear();
                     for (int f = 0; f < audo.files.Count; f++)
                     {
                         audioList.Nodes[0].Nodes.Add("audio_" + f);
                     }
+                    break;
                 }
             }
             string[] audiogroups = Directory.GetFiles(path, "audiogroup*.dat");
@@ -141,7 +175,7 @@ namespace GM2Explorer
                     {
                         magic = BitConverter.ToUInt32(audiogroup, b);
                     }
-                    if (magic == 0x4F445541)
+                    if (magic == 1329878337) //AUDO
                     {
                         audioList.Nodes.Add(audiogroups[i].Replace(path + "\\", ""));
                         AUDOstruct audo;
@@ -173,6 +207,7 @@ namespace GM2Explorer
                         {
                             audioList.Nodes[i + 1].Nodes.Add("audio_" + f);
                         }
+                        break;
                     }
                 }
             }
@@ -188,7 +223,7 @@ namespace GM2Explorer
         private void openToolStripMenuItem_Click(object sender, EventArgs e)
         {
             OpenFileDialog open = new OpenFileDialog();
-            open.Filter = "GameMaker 2 Data Archives|data.win";
+            open.Filter = "GameMaker 2 Data Archives|data.win|EXE Executable Files|*.exe";
             if (open.ShowDialog() == DialogResult.OK)
             {
                 if (File.Exists(open.FileName))
