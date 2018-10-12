@@ -41,51 +41,53 @@ namespace GM2Explorer
             if (wavOutput != null) wavOutput.Dispose();
             if (wavFile != null) wavFile.Dispose();
             if (vorbisFile != null) vorbisFile.Dispose();
+            textureDisplay.Image = null;
             loadedAudio = new byte[] { };
             isOgg = false;
             audioList.Nodes.Clear();
             texList.Items.Clear();
+            audioList.BeginUpdate();
+            texList.BeginUpdate();
             TXTR.Clear();
             AUDO.Clear();
-            int texOffset = 0x8;
             statusProgress.Value = 0;
             this.Enabled = false;
             this.Cursor = Cursors.WaitCursor;
             byte[] file = { };
-            if (File.Exists(path + "\\data.win"))
+            if (!path.EndsWith(".exe"))
             {
-                file = File.ReadAllBytes(path + "\\data.win");
+                if (File.Exists(path + "\\data.win"))
+                {
+                    file = File.ReadAllBytes(path + "\\data.win");
+                }
+                else if (File.Exists(path + "\\game.win"))
+                {
+                    file = File.ReadAllBytes(path + "\\game.win");
+                }
             }
             else
             {
-                string[] exes = Directory.GetFiles(path, path.Split('\\').Last().Replace(" ", "") + ".exe");
-                file = File.ReadAllBytes(exes[0]);
-                for (int i = 0; i < file.Length; i++)
+                file = File.ReadAllBytes(path);
+                for (int i = 0; i < file.Length; i += 4)
                 {
                     uint FORMmagic = BitConverter.ToUInt32(file, i);
                     uint GEN8magic = BitConverter.ToUInt32(file, i + 0x8);
                     if (FORMmagic == 1297239878 && GEN8magic == 944653639)
                     {
-                        file = file.Skip(i).ToArray();
+                        uint fileLength = BitConverter.ToUInt32(file, i + 0x4);
+                        file = file.Skip(i).Take((int)fileLength + 0x8).ToArray();
                         break;
                     }
                 }
             }
-            switch (BitConverter.ToUInt32(file, 0x10))
+            int texOffset = 0x8;
+            uint version = BitConverter.ToUInt32(file, 0x10);
+            if (version == 4097 && !File.Exists(path + "\\game.win"))
             {
-                case 4353:
-                    {
-                        texOffset = 0x8;
-                        break;
-                    }
-                case 4097:
-                    {
-                        texOffset = 0x4;
-                        break;
-                    }
+                texOffset = 0x4;
             }
-            this.Text = "GM2Explorer - Reading \"" + path + "\\data.win\"";
-            for (int i = 0; i < file.Length; i++)
+            this.Text = "GM2Explorer - Reading \"" + path + "\"";
+            for (int i = 0; i < file.Length; i += 4)
             {
                 uint magic = 0;
                 if (i < file.Length - 3)
@@ -118,12 +120,15 @@ namespace GM2Explorer
                         {
                             tex.AddRange(file.Skip((int)fileOffsets[f]).Take(((int)size + i) - (int)fileOffsets[f]));
                         }
-                        MemoryStream stream = new MemoryStream(tex.ToArray());
-                        Image img = Image.FromStream(stream);
-                        TXTR.Add(new Bitmap(img));
-                        stream.Dispose();
-                        img.Dispose();
-                        tex.Clear();
+                        try
+                        {
+                            MemoryStream stream = new MemoryStream(tex.ToArray());
+                            Image img = Image.FromStream(stream);
+                            TXTR.Add(new Bitmap(img));
+                            stream.Dispose();
+                            img.Dispose();
+                            tex.Clear();
+                        } catch { }
                     }
                     fileOffsets.Clear();
                 }
@@ -163,12 +168,16 @@ namespace GM2Explorer
                     break;
                 }
             }
+            if (path.EndsWith(".exe"))
+            {
+                path = path.Replace("\\" + path.Split('\\').Last(), "");
+            }
             string[] audiogroups = Directory.GetFiles(path, "audiogroup*.dat");
             for (int i = 0; i < audiogroups.Length; i++)
             {
                 this.Text = "GM2Explorer - Reading \"" + path + "\\" + audiogroups[i].Replace(path + "\\", "") + "\"";
                 byte[] audiogroup = File.ReadAllBytes(audiogroups[i]);
-                for (int b = 0; b < audiogroup.Length; b++)
+                for (int b = 0; b < audiogroup.Length; b += 4)
                 {
                     uint magic = 0;
                     if (b < audiogroup.Length - 3)
@@ -218,17 +227,27 @@ namespace GM2Explorer
             this.Text = "GM2Explorer";
             this.Cursor = Cursors.Default;
             this.Enabled = true;
+            this.BringToFront();
+            audioList.EndUpdate();
+            texList.EndUpdate();
         }
 
         private void openToolStripMenuItem_Click(object sender, EventArgs e)
         {
             OpenFileDialog open = new OpenFileDialog();
-            open.Filter = "GameMaker 2 Data Archives|data.win|EXE Executable Files|*.exe";
+            open.Filter = "GameMaker 2 Data Archives|*.win|EXE Executable Files|*.exe";
             if (open.ShowDialog() == DialogResult.OK)
             {
                 if (File.Exists(open.FileName))
                 {
-                    ReadData(Path.GetDirectoryName(open.FileName));
+                    if (open.FileName.EndsWith(".exe"))
+                    {
+                        ReadData(open.FileName);
+                    }
+                    else
+                    {
+                        ReadData(Path.GetDirectoryName(open.FileName));
+                    }
                 }
             }
         }
