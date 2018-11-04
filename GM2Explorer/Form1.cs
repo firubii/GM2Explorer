@@ -30,6 +30,8 @@ namespace GM2Explorer
         private VorbisWaveReader vorbisFile;
         byte[] loadedAudio;
         bool isOgg = false;
+        uint txtrOffset = 0;
+        uint audoOffset = 0;
 
         public Form1()
         {
@@ -82,11 +84,14 @@ namespace GM2Explorer
             }
             int texOffset = 0x8;
             uint version = BitConverter.ToUInt32(file, 0x10);
-            if (version == 4097 && !File.Exists(path + "\\game.win"))
+            uint projnameoffset = BitConverter.ToUInt32(file, 0x14);
+            uint projnamelength = BitConverter.ToUInt32(file, (int)projnameoffset - 0x4);
+            string projname = Encoding.UTF8.GetString(file, (int)projnameoffset, (int)projnamelength);
+            if (version == 4097 && projname != "NXTALE" && projname != "DELTARUNE")
             {
                 texOffset = 0x4;
             }
-            this.Text = "GM2Explorer - Reading \"" + path + "\"";
+            this.Text = "GM2Explorer - Reading game " + projname;
             for (int i = 0; i < file.Length; i += 4)
             {
                 uint magic = 0;
@@ -96,6 +101,7 @@ namespace GM2Explorer
                 }
                 if (magic == 1381259348) //TXTR
                 {
+                    txtrOffset = (uint)i;
                     //Console.WriteLine("Found TXTR Section at 0x" + i.ToString("X8"));
                     uint size = BitConverter.ToUInt32(file, i + 0x4);
                     uint fileCount = BitConverter.ToUInt32(file, i + 0x8);
@@ -134,6 +140,7 @@ namespace GM2Explorer
                 }
                 else if (magic == 1329878337) //AUDO
                 {
+                    audoOffset = (uint)i;
                     audioList.Nodes.Add("data.win");
                     AUDOstruct audo;
                     audo.fileName = "data.win";
@@ -235,7 +242,7 @@ namespace GM2Explorer
         private void openToolStripMenuItem_Click(object sender, EventArgs e)
         {
             OpenFileDialog open = new OpenFileDialog();
-            open.Filter = "GameMaker 2 Data Archives|*.win|EXE Executable Files|*.exe";
+            open.Filter = "GameMaker Data Archives|*.win|EXE Executable Files|*.exe";
             if (open.ShowDialog() == DialogResult.OK)
             {
                 if (File.Exists(open.FileName))
@@ -254,8 +261,8 @@ namespace GM2Explorer
 
         private void texList_SelectedIndexChanged(object sender, EventArgs e)
         {
-            Bitmap texture = TXTR[texList.SelectedIndex];
-            textureDisplay.Image = texture;
+            Bitmap image = TXTR[texList.SelectedIndex];
+            textureDisplay.Image = image;
         }
 
         private void saveTextureToolStripMenuItem_Click(object sender, EventArgs e)
@@ -431,6 +438,27 @@ namespace GM2Explorer
                         }
                     }
                 }
+            }
+        }
+
+        private void replaceTextureToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            OpenFileDialog open = new OpenFileDialog();
+            open.Filter = "Portable Network Graphic Image Files|*.png";
+            open.DefaultExt = ".png";
+            if (open.ShowDialog() == DialogResult.OK)
+            {
+                /*if (File.Exists(open.FileName))
+                {
+                    Bitmap bitmap = new Bitmap(open.FileName);
+                    if (bitmap.Height == TXTR[texList.SelectedIndex].Height && bitmap.Width == TXTR[texList.SelectedIndex].Width)
+                    {
+                        TXTR[texList.SelectedIndex].Dispose();
+                        TXTR[texList.SelectedIndex] = bitmap;
+                        MessageBox.Show("Successfully replaced texture", "GM2Explorer");
+                    }
+                    bitmap.Dispose();
+                }*/
             }
         }
     }

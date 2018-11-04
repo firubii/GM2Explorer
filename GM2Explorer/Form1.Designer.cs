@@ -41,18 +41,20 @@
             this.textureContextStrip = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.saveTextureToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.exportAllTexturesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.statusStrip1 = new System.Windows.Forms.StatusStrip();
-            this.statusProgress = new System.Windows.Forms.ToolStripProgressBar();
             this.AUDOtab = new System.Windows.Forms.TabPage();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
+            this.filelabel = new System.Windows.Forms.Label();
+            this.playPause = new System.Windows.Forms.Button();
+            this.trackBar1 = new System.Windows.Forms.TrackBar();
             this.groupBox4 = new System.Windows.Forms.GroupBox();
             this.audioList = new System.Windows.Forms.TreeView();
-            this.trackBar1 = new System.Windows.Forms.TrackBar();
-            this.playPause = new System.Windows.Forms.Button();
-            this.filelabel = new System.Windows.Forms.Label();
             this.audioContextStrip = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.exportAudioToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.exportAllAudioToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.statusStrip1 = new System.Windows.Forms.StatusStrip();
+            this.statusProgress = new System.Windows.Forms.ToolStripProgressBar();
+            this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.replaceTextureToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             this.tabControl1.SuspendLayout();
             this.TXTRtab.SuspendLayout();
@@ -60,12 +62,12 @@
             ((System.ComponentModel.ISupportInitialize)(this.textureDisplay)).BeginInit();
             this.groupBox1.SuspendLayout();
             this.textureContextStrip.SuspendLayout();
-            this.statusStrip1.SuspendLayout();
             this.AUDOtab.SuspendLayout();
             this.groupBox3.SuspendLayout();
-            this.groupBox4.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.trackBar1)).BeginInit();
+            this.groupBox4.SuspendLayout();
             this.audioContextStrip.SuspendLayout();
+            this.statusStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
             // menuStrip1
@@ -159,38 +161,24 @@
             // 
             this.textureContextStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.saveTextureToolStripMenuItem,
-            this.exportAllTexturesToolStripMenuItem});
+            this.exportAllTexturesToolStripMenuItem,
+            this.replaceTextureToolStripMenuItem});
             this.textureContextStrip.Name = "contextMenuStrip1";
-            this.textureContextStrip.Size = new System.Drawing.Size(169, 48);
+            this.textureContextStrip.Size = new System.Drawing.Size(181, 92);
             // 
             // saveTextureToolStripMenuItem
             // 
             this.saveTextureToolStripMenuItem.Name = "saveTextureToolStripMenuItem";
-            this.saveTextureToolStripMenuItem.Size = new System.Drawing.Size(168, 22);
+            this.saveTextureToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.saveTextureToolStripMenuItem.Text = "Export Texture";
             this.saveTextureToolStripMenuItem.Click += new System.EventHandler(this.saveTextureToolStripMenuItem_Click);
             // 
             // exportAllTexturesToolStripMenuItem
             // 
             this.exportAllTexturesToolStripMenuItem.Name = "exportAllTexturesToolStripMenuItem";
-            this.exportAllTexturesToolStripMenuItem.Size = new System.Drawing.Size(168, 22);
+            this.exportAllTexturesToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.exportAllTexturesToolStripMenuItem.Text = "Export all Textures";
             this.exportAllTexturesToolStripMenuItem.Click += new System.EventHandler(this.exportAllTexturesToolStripMenuItem_Click);
-            // 
-            // statusStrip1
-            // 
-            this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.statusProgress});
-            this.statusStrip1.Location = new System.Drawing.Point(0, 441);
-            this.statusStrip1.Name = "statusStrip1";
-            this.statusStrip1.Size = new System.Drawing.Size(800, 22);
-            this.statusStrip1.TabIndex = 2;
-            this.statusStrip1.Text = "statusStrip1";
-            // 
-            // statusProgress
-            // 
-            this.statusProgress.Name = "statusProgress";
-            this.statusProgress.Size = new System.Drawing.Size(100, 16);
             // 
             // AUDOtab
             // 
@@ -216,6 +204,33 @@
             this.groupBox3.TabStop = false;
             this.groupBox3.Text = "Preview";
             // 
+            // filelabel
+            // 
+            this.filelabel.AutoSize = true;
+            this.filelabel.Location = new System.Drawing.Point(7, 154);
+            this.filelabel.Name = "filelabel";
+            this.filelabel.Size = new System.Drawing.Size(29, 13);
+            this.filelabel.TabIndex = 4;
+            this.filelabel.Text = "File: ";
+            // 
+            // playPause
+            // 
+            this.playPause.Location = new System.Drawing.Point(193, 224);
+            this.playPause.Name = "playPause";
+            this.playPause.Size = new System.Drawing.Size(75, 23);
+            this.playPause.TabIndex = 1;
+            this.playPause.Text = "Play";
+            this.playPause.UseVisualStyleBackColor = true;
+            this.playPause.Click += new System.EventHandler(this.playPause_Click);
+            // 
+            // trackBar1
+            // 
+            this.trackBar1.Location = new System.Drawing.Point(6, 173);
+            this.trackBar1.Name = "trackBar1";
+            this.trackBar1.Size = new System.Drawing.Size(477, 45);
+            this.trackBar1.TabIndex = 0;
+            this.trackBar1.TickFrequency = 5000;
+            // 
             // groupBox4
             // 
             this.groupBox4.Controls.Add(this.audioList);
@@ -235,54 +250,54 @@
             this.audioList.TabIndex = 0;
             this.audioList.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.audioList_AfterSelect);
             // 
-            // trackBar1
-            // 
-            this.trackBar1.Location = new System.Drawing.Point(6, 173);
-            this.trackBar1.Name = "trackBar1";
-            this.trackBar1.Size = new System.Drawing.Size(477, 45);
-            this.trackBar1.TabIndex = 0;
-            this.trackBar1.TickFrequency = 5000;
-            // 
-            // playPause
-            // 
-            this.playPause.Location = new System.Drawing.Point(193, 224);
-            this.playPause.Name = "playPause";
-            this.playPause.Size = new System.Drawing.Size(75, 23);
-            this.playPause.TabIndex = 1;
-            this.playPause.Text = "Play";
-            this.playPause.UseVisualStyleBackColor = true;
-            this.playPause.Click += new System.EventHandler(this.playPause_Click);
-            // 
-            // filelabel
-            // 
-            this.filelabel.AutoSize = true;
-            this.filelabel.Location = new System.Drawing.Point(7, 154);
-            this.filelabel.Name = "filelabel";
-            this.filelabel.Size = new System.Drawing.Size(29, 13);
-            this.filelabel.TabIndex = 4;
-            this.filelabel.Text = "File: ";
-            // 
             // audioContextStrip
             // 
             this.audioContextStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.exportAudioToolStripMenuItem,
             this.exportAllAudioToolStripMenuItem});
             this.audioContextStrip.Name = "audioContextStrip";
-            this.audioContextStrip.Size = new System.Drawing.Size(181, 70);
+            this.audioContextStrip.Size = new System.Drawing.Size(158, 48);
             // 
             // exportAudioToolStripMenuItem
             // 
             this.exportAudioToolStripMenuItem.Name = "exportAudioToolStripMenuItem";
-            this.exportAudioToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.exportAudioToolStripMenuItem.Size = new System.Drawing.Size(157, 22);
             this.exportAudioToolStripMenuItem.Text = "Export Audio";
             this.exportAudioToolStripMenuItem.Click += new System.EventHandler(this.exportAudioToolStripMenuItem_Click);
             // 
             // exportAllAudioToolStripMenuItem
             // 
             this.exportAllAudioToolStripMenuItem.Name = "exportAllAudioToolStripMenuItem";
-            this.exportAllAudioToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.exportAllAudioToolStripMenuItem.Size = new System.Drawing.Size(157, 22);
             this.exportAllAudioToolStripMenuItem.Text = "Export all Audio";
             this.exportAllAudioToolStripMenuItem.Click += new System.EventHandler(this.exportAllAudioToolStripMenuItem_Click);
+            // 
+            // statusStrip1
+            // 
+            this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.statusProgress});
+            this.statusStrip1.Location = new System.Drawing.Point(0, 441);
+            this.statusStrip1.Name = "statusStrip1";
+            this.statusStrip1.Size = new System.Drawing.Size(800, 22);
+            this.statusStrip1.TabIndex = 2;
+            this.statusStrip1.Text = "statusStrip1";
+            // 
+            // statusProgress
+            // 
+            this.statusProgress.Name = "statusProgress";
+            this.statusProgress.Size = new System.Drawing.Size(100, 16);
+            // 
+            // contextMenuStrip1
+            // 
+            this.contextMenuStrip1.Name = "contextMenuStrip1";
+            this.contextMenuStrip1.Size = new System.Drawing.Size(61, 4);
+            // 
+            // replaceTextureToolStripMenuItem
+            // 
+            this.replaceTextureToolStripMenuItem.Name = "replaceTextureToolStripMenuItem";
+            this.replaceTextureToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.replaceTextureToolStripMenuItem.Text = "Replace Texture";
+            this.replaceTextureToolStripMenuItem.Click += new System.EventHandler(this.replaceTextureToolStripMenuItem_Click);
             // 
             // Form1
             // 
@@ -307,14 +322,14 @@
             ((System.ComponentModel.ISupportInitialize)(this.textureDisplay)).EndInit();
             this.groupBox1.ResumeLayout(false);
             this.textureContextStrip.ResumeLayout(false);
-            this.statusStrip1.ResumeLayout(false);
-            this.statusStrip1.PerformLayout();
             this.AUDOtab.ResumeLayout(false);
             this.groupBox3.ResumeLayout(false);
             this.groupBox3.PerformLayout();
-            this.groupBox4.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.trackBar1)).EndInit();
+            this.groupBox4.ResumeLayout(false);
             this.audioContextStrip.ResumeLayout(false);
+            this.statusStrip1.ResumeLayout(false);
+            this.statusStrip1.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -346,6 +361,8 @@
         private System.Windows.Forms.ContextMenuStrip audioContextStrip;
         private System.Windows.Forms.ToolStripMenuItem exportAudioToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem exportAllAudioToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem replaceTextureToolStripMenuItem;
+        private System.Windows.Forms.ContextMenuStrip contextMenuStrip1;
     }
 }
 
