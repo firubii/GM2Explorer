@@ -55,6 +55,7 @@ namespace GM2Explorer
             statusProgress.Value = 0;
             this.Enabled = false;
             this.Cursor = Cursors.WaitCursor;
+            BinaryReader reader;
             byte[] file = { };
             if (!path.EndsWith(".exe"))
             {
@@ -69,62 +70,74 @@ namespace GM2Explorer
             }
             else
             {
-                file = File.ReadAllBytes(path);
-                for (int i = 0; i < file.Length; i += 4)
+                reader = new BinaryReader(new FileStream(path, FileMode.Open));
+                while (reader.BaseStream.Position < reader.BaseStream.Length)
                 {
-                    uint FORMmagic = BitConverter.ToUInt32(file, i);
-                    uint GEN8magic = BitConverter.ToUInt32(file, i + 0x8);
-                    if (FORMmagic == 1297239878 && GEN8magic == 944653639)
+                    uint currentOffset = (uint)reader.BaseStream.Position;
+                    string FORMmagic = string.Join("", reader.ReadChars(4));
+                    reader.BaseStream.Seek(4, SeekOrigin.Current);
+                    string GEN8magic = string.Join("", reader.ReadChars(4));
+                    if (FORMmagic == "FORM" && GEN8magic == "GEN8")
                     {
-                        uint fileLength = BitConverter.ToUInt32(file, i + 0x4);
-                        file = file.Skip(i).Take((int)fileLength + 0x8).ToArray();
+                        reader.BaseStream.Seek(currentOffset + 4, SeekOrigin.Begin);
+                        uint fileLength = reader.ReadUInt32() + 8;
+                        reader.BaseStream.Seek(currentOffset, SeekOrigin.Current);
+                        file = reader.ReadBytes((int)fileLength);
                         break;
                     }
                 }
             }
+            reader = new BinaryReader(new MemoryStream(file));
             int texOffset = 0x8;
-            uint version = BitConverter.ToUInt32(file, 0x10);
-            uint projnameoffset = BitConverter.ToUInt32(file, 0x14);
-            uint projnamelength = BitConverter.ToUInt32(file, (int)projnameoffset - 0x4);
-            string projname = Encoding.UTF8.GetString(file, (int)projnameoffset, (int)projnamelength);
+            reader.BaseStream.Seek(0x10, SeekOrigin.Begin);
+            uint version = reader.ReadUInt32();
+            uint projnameoffset = reader.ReadUInt32();
+            reader.BaseStream.Seek(projnameoffset - 4, SeekOrigin.Begin);
+            uint projnamelength = reader.ReadUInt32();
+            string projname = string.Join("", reader.ReadChars((int)projnamelength));
             if (version == 4097 && projname != "NXTALE" && projname != "DELTARUNE")
             {
                 texOffset = 0x4;
             }
             this.Text = "GM2Explorer - Reading game " + projname;
-            for (int i = 0; i < file.Length; i += 4)
+            reader.BaseStream.Seek(0, SeekOrigin.Begin);
+            while (reader.BaseStream.Position < reader.BaseStream.Length)
             {
-                uint magic = 0;
-                if (i < file.Length - 3)
+                uint currentOffset = (uint)reader.BaseStream.Position;
+                byte[] magicBytes = reader.ReadBytes(4);
+                string magic = string.Join("", Encoding.UTF8.GetChars(magicBytes));
+                if (magic == "TXTR") //TXTR
                 {
-                    magic = BitConverter.ToUInt32(file, i);
-                }
-                if (magic == 1381259348) //TXTR
-                {
-                    txtrOffset = (uint)i;
-                    //Console.WriteLine("Found TXTR Section at 0x" + i.ToString("X8"));
-                    uint size = BitConverter.ToUInt32(file, i + 0x4);
-                    uint fileCount = BitConverter.ToUInt32(file, i + 0x8);
+                    //Console.WriteLine("Found TXTR Section at 0x" + currentOffset.ToString("X8"));
+                    uint size = reader.ReadUInt32() + 8;
+                    uint fileCount = reader.ReadUInt32();
+                    uint fileListStart = (uint)reader.BaseStream.Position;
                     statusProgress.Value = 0;
                     statusProgress.Maximum = (int)fileCount;
                     List<uint> fileOffsets = new List<uint>();
                     for (int f = 0; f < fileCount; f++)
                     {
-                        uint texDataOffset = BitConverter.ToUInt32(file, i + 0xC + (f * 0x4));
-                        fileOffsets.Add(BitConverter.ToUInt32(file, (int)texDataOffset + texOffset));
+                        reader.BaseStream.Seek(fileListStart + (f * 4), SeekOrigin.Begin);
+                        uint texDataOffset = reader.ReadUInt32();
+                        reader.BaseStream.Seek(texDataOffset + texOffset, SeekOrigin.Begin);
+                        fileOffsets.Add(reader.ReadUInt32());
                     }
                     for (int f = 0; f < fileOffsets.Count; f++)
                     {
                         statusProgress.Value++;
                         //Console.WriteLine("Reading texture " + f + " at offset 0x" + fileOffsets[f].ToString("X8"));
                         List<byte> tex = new List<byte>();
-                        if (f < fileOffsets.Count - 1)
+                        reader.BaseStream.Seek(fileOffsets[f], SeekOrigin.Begin);
+                        while (reader.BaseStream.Position < reader.BaseStream.Length)
                         {
-                            tex.AddRange(file.Skip((int)fileOffsets[f]).Take((int)fileOffsets[f + 1] - (int)fileOffsets[f]));
-                        }
-                        else
-                        {
-                            tex.AddRange(file.Skip((int)fileOffsets[f]).Take(((int)size + i) - (int)fileOffsets[f]));
+                            tex.Add(reader.ReadByte());
+                            if (tex[tex.Count - 1] == 0x82)
+                            {
+                                if (tex[tex.Count - 4] == 0xAE && tex[tex.Count - 3] == 0x42 && tex[tex.Count - 2] == 0x60)
+                                {
+                                    break;
+                                }
+                            }
                         }
                         try
                         {
@@ -137,32 +150,34 @@ namespace GM2Explorer
                         } catch { }
                     }
                     fileOffsets.Clear();
+                    reader.BaseStream.Seek(currentOffset + 4, SeekOrigin.Begin);
                 }
-                else if (magic == 1329878337) //AUDO
+                if (magic == "AUDO") //AUDO
                 {
-                    audoOffset = (uint)i;
                     audioList.Nodes.Add("data.win");
                     AUDOstruct audo;
                     audo.fileName = "data.win";
                     audo.files = new List<byte[]>();
-                    //Console.WriteLine("Found TXTR Section at 0x" + i.ToString("X8"));
-                    uint size = BitConverter.ToUInt32(file, i + 0x4);
-                    uint fileCount = BitConverter.ToUInt32(file, i + 0x8);
+                    Console.WriteLine("Found AUDO Section at 0x" + currentOffset.ToString("X8"));
+                    uint size = reader.ReadUInt32() + 8;
+                    uint fileCount = reader.ReadUInt32();
+                    uint fileListStart = (uint)reader.BaseStream.Position;
                     statusProgress.Value = 0;
                     statusProgress.Maximum = (int)fileCount;
                     List<uint> fileOffsets = new List<uint>();
                     for (int f = 0; f < fileCount; f++)
                     {
-                        uint audoDataOffset = BitConverter.ToUInt32(file, i + 0xC + (f * 0x4));
+                        uint audoDataOffset = reader.ReadUInt32();
                         fileOffsets.Add(audoDataOffset);
                     }
                     for (int f = 0; f < fileOffsets.Count; f++)
                     {
+                        reader.BaseStream.Seek(fileOffsets[f], SeekOrigin.Begin);
                         statusProgress.Value++;
                         //Console.WriteLine("Reading audio " + f + " at offset 0x" + fileOffsets[f].ToString("X8"));
                         List<byte> audio = new List<byte>();
-                        uint fileLength = BitConverter.ToUInt32(file, (int)fileOffsets[f]);
-                        audio.AddRange(file.Skip((int)fileOffsets[f] + 0x4).Take((int)fileLength));
+                        uint fileLength = reader.ReadUInt32();
+                        audio.AddRange(reader.ReadBytes((int)fileLength));
                         audo.files.Add(audio.ToArray());
                         audio.Clear();
                     }
@@ -175,6 +190,7 @@ namespace GM2Explorer
                     break;
                 }
             }
+            reader.Dispose();
             if (path.EndsWith(".exe"))
             {
                 path = path.Replace("\\" + path.Split('\\').Last(), "");
@@ -183,50 +199,51 @@ namespace GM2Explorer
             for (int i = 0; i < audiogroups.Length; i++)
             {
                 this.Text = "GM2Explorer - Reading \"" + path + "\\" + audiogroups[i].Replace(path + "\\", "") + "\"";
-                byte[] audiogroup = File.ReadAllBytes(audiogroups[i]);
-                for (int b = 0; b < audiogroup.Length; b += 4)
+                reader = new BinaryReader(new FileStream(audiogroups[i], FileMode.Open));
+                while (reader.BaseStream.Position < reader.BaseStream.Length)
                 {
-                    uint magic = 0;
-                    if (b < audiogroup.Length - 3)
+                    uint currentOffset = (uint)reader.BaseStream.Position;
+                    byte[] magicBytes = reader.ReadBytes(4);
+                    string magic = string.Join("", Encoding.UTF8.GetChars(magicBytes));
+                    if (magic == "AUDO") //AUDO
                     {
-                        magic = BitConverter.ToUInt32(audiogroup, b);
-                    }
-                    if (magic == 1329878337) //AUDO
-                    {
-                        audioList.Nodes.Add(audiogroups[i].Replace(path + "\\", ""));
                         AUDOstruct audo;
+                        audioList.Nodes.Add(audiogroups[i].Replace(path + "\\", ""));
                         audo.fileName = audiogroups[i].Replace(path, "");
                         audo.files = new List<byte[]>();
-                        //Console.WriteLine("Found TXTR Section at 0x" + i.ToString("X8"));
-                        uint size = BitConverter.ToUInt32(audiogroup, b + 0x4);
-                        uint fileCount = BitConverter.ToUInt32(audiogroup, b + 0x8);
+                        //Console.WriteLine("Found AUDO Section at 0x" + currentOffset.ToString("X8"));
+                        uint size = reader.ReadUInt32() + 8;
+                        uint fileCount = reader.ReadUInt32();
+                        uint fileListStart = (uint)reader.BaseStream.Position;
                         statusProgress.Value = 0;
                         statusProgress.Maximum = (int)fileCount;
                         List<uint> fileOffsets = new List<uint>();
                         for (int f = 0; f < fileCount; f++)
                         {
-                            uint audoDataOffset = BitConverter.ToUInt32(audiogroup, b + 0xC + (f * 0x4));
+                            uint audoDataOffset = reader.ReadUInt32();
                             fileOffsets.Add(audoDataOffset);
                         }
                         for (int f = 0; f < fileOffsets.Count; f++)
                         {
+                            reader.BaseStream.Seek(fileOffsets[f], SeekOrigin.Begin);
                             statusProgress.Value++;
                             //Console.WriteLine("Reading audio " + f + " at offset 0x" + fileOffsets[f].ToString("X8"));
                             List<byte> audio = new List<byte>();
-                            uint fileLength = BitConverter.ToUInt32(audiogroup, (int)fileOffsets[f]);
-                            audio.AddRange(audiogroup.Skip((int)fileOffsets[f] + 0x4).Take((int)fileLength));
+                            uint fileLength = reader.ReadUInt32();
+                            audio.AddRange(reader.ReadBytes((int)fileLength));
                             audo.files.Add(audio.ToArray());
                             audio.Clear();
                         }
                         AUDO.Add(audo);
                         for (int f = 0; f < audo.files.Count; f++)
                         {
-                            audioList.Nodes[i + 1].Nodes.Add("audio_" + f);
+                            audioList.Nodes[audioList.Nodes.Count - 1].Nodes.Add("audio_" + f);
                         }
                         break;
                     }
                 }
             }
+            reader.Dispose();
             for (int i = 0; i < TXTR.Count; i++)
             {
                 texList.Items.Add("tex_" + i);
