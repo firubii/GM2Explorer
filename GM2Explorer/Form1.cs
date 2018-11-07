@@ -175,7 +175,7 @@ namespace GM2Explorer
                     AUDOstruct audo;
                     audo.fileName = "data.win";
                     audo.files = new List<byte[]>();
-                    Console.WriteLine("Found AUDO Section at 0x" + currentOffset.ToString("X8"));
+                    //Console.WriteLine("Found AUDO Section at 0x" + currentOffset.ToString("X8"));
                     uint size = reader.ReadUInt32() + 8;
                     uint fileCount = reader.ReadUInt32();
                     uint fileListStart = (uint)reader.BaseStream.Position;
