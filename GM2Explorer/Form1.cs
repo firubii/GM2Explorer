@@ -21,7 +21,13 @@ namespace GM2Explorer
             public string fileName;
             public List<byte[]> files;
         }
+        public struct SPRT
+        {
+            public string name;
+            public List<Bitmap> sprites;
+        }
 
+        List<SPRT> SPRTList = new List<SPRT>();
         List<Bitmap> TXTR = new List<Bitmap>();
         List<AUDOstruct> AUDO = new List<AUDOstruct>();
 
@@ -30,12 +36,18 @@ namespace GM2Explorer
         private VorbisWaveReader vorbisFile;
         byte[] loadedAudio;
         bool isOgg = false;
-        uint txtrOffset = 0;
-        uint audoOffset = 0;
 
         public Form1()
         {
             InitializeComponent();
+        }
+
+        public Bitmap Crop(Bitmap b, Rectangle r)
+        {
+            Bitmap nb = new Bitmap(r.Width, r.Height);
+            Graphics g = Graphics.FromImage(nb);
+            g.DrawImage(b, -r.X, -r.Y);
+            return nb;
         }
 
         public void ReadData(string path)
@@ -44,14 +56,18 @@ namespace GM2Explorer
             if (wavFile != null) wavFile.Dispose();
             if (vorbisFile != null) vorbisFile.Dispose();
             textureDisplay.Image = null;
+            spriteDisplay.Image = null;
             loadedAudio = new byte[] { };
             isOgg = false;
             audioList.Nodes.Clear();
             texList.Items.Clear();
+            spriteList.Items.Clear();
             audioList.BeginUpdate();
             texList.BeginUpdate();
+            spriteList.BeginUpdate();
             TXTR.Clear();
             AUDO.Clear();
+            SPRTList.Clear();
             statusProgress.Value = 0;
             this.Enabled = false;
             this.Cursor = Cursors.WaitCursor;
@@ -89,13 +105,14 @@ namespace GM2Explorer
             }
             reader = new BinaryReader(new MemoryStream(file));
             int texOffset = 0x8;
-            reader.BaseStream.Seek(0x10, SeekOrigin.Begin);
+            reader.BaseStream.Seek(0x3C, SeekOrigin.Begin);
             uint version = reader.ReadUInt32();
+            reader.BaseStream.Seek(0x14, SeekOrigin.Begin);
             uint projnameoffset = reader.ReadUInt32();
             reader.BaseStream.Seek(projnameoffset - 4, SeekOrigin.Begin);
             uint projnamelength = reader.ReadUInt32();
             string projname = string.Join("", reader.ReadChars((int)projnamelength));
-            if (version == 4097 && projname != "NXTALE" && projname != "DELTARUNE")
+            if (version == 1)
             {
                 texOffset = 0x4;
             }
@@ -190,6 +207,80 @@ namespace GM2Explorer
                     break;
                 }
             }
+            reader.BaseStream.Seek(0, SeekOrigin.Begin);
+            //Begin sprite search
+            while (reader.BaseStream.Position < reader.BaseStream.Length)
+            {
+                uint currentOffset = (uint)reader.BaseStream.Position;
+                byte[] magicBytes = reader.ReadBytes(4);
+                string magic = string.Join("", Encoding.UTF8.GetChars(magicBytes));
+                if (magic == "SPRT")
+                {
+                    uint size = reader.ReadUInt32();
+                    uint spriteCount = reader.ReadUInt32();
+                    statusProgress.Value = 0;
+                    statusProgress.Maximum = (int)spriteCount;
+                    List<uint> spriteOffsets = new List<uint>();
+                    for (int i = 0; i < spriteCount; i++)
+                    {
+                        spriteOffsets.Add(reader.ReadUInt32());
+                    }
+                    for (int i = 0; i < spriteCount; i++)
+                    {
+                        SPRT sprt;
+                        sprt.sprites = new List<Bitmap>();
+                        reader.BaseStream.Seek(spriteOffsets[i], SeekOrigin.Begin);
+                        uint nameOffset = reader.ReadUInt32();
+                        uint width = reader.ReadUInt32();
+                        uint height = reader.ReadUInt32();
+                        uint marginL = reader.ReadUInt32();
+                        uint marginR = reader.ReadUInt32();
+                        uint marginB = reader.ReadUInt32();
+                        uint marginT = reader.ReadUInt32();
+                        uint unk1 = reader.ReadUInt32();
+                        uint unk2 = reader.ReadUInt32();
+                        uint unk3 = reader.ReadUInt32();
+                        uint bboxMode = reader.ReadUInt32();
+                        uint sepMasks = reader.ReadUInt32();
+                        uint originX = reader.ReadUInt32();
+                        uint originY = reader.ReadUInt32();
+                        if (version == 2)
+                        {
+                            reader.BaseStream.Seek(0x14, SeekOrigin.Current);
+                        }
+                        uint texCount = reader.ReadUInt32();
+                        List<uint> texOffsets = new List<uint>();
+                        List<Bitmap> sprites = new List<Bitmap>();
+                        for (int t = 0; t < texCount; t++)
+                        {
+                            texOffsets.Add(reader.ReadUInt32());
+                        }
+                        for (int t = 0; t < texCount; t++)
+                        {
+                            reader.BaseStream.Seek(texOffsets[t], SeekOrigin.Begin);
+                            ushort x = reader.ReadUInt16();
+                            ushort y = reader.ReadUInt16();
+                            ushort twidth = reader.ReadUInt16();
+                            ushort theight = reader.ReadUInt16();
+                            ushort renderx = reader.ReadUInt16();
+                            ushort rendery = reader.ReadUInt16();
+                            ushort boundingx = reader.ReadUInt16();
+                            ushort boundingy = reader.ReadUInt16();
+                            ushort boundingw = reader.ReadUInt16();
+                            ushort boundingh = reader.ReadUInt16();
+                            ushort spritesheet = reader.ReadUInt16();
+                            sprt.sprites.Add(Crop(TXTR[spritesheet], new Rectangle(x, y, twidth, theight)));
+                        }
+                        reader.BaseStream.Seek(nameOffset - 4, SeekOrigin.Begin);
+                        uint nameLength = reader.ReadUInt32();
+                        string name = string.Join("", reader.ReadChars((int)nameLength));
+                        sprt.name = name;
+                        SPRTList.Add(sprt);
+                        statusProgress.Value++;
+                    }
+                    break;
+                }
+            }
             reader.Dispose();
             if (path.EndsWith(".exe"))
             {
@@ -248,12 +339,17 @@ namespace GM2Explorer
             {
                 texList.Items.Add("tex_" + i);
             }
+            for (int i = 0; i < SPRTList.Count; i++)
+            {
+                spriteList.Items.Add(SPRTList[i].name);
+            }
             this.Text = "GM2Explorer";
             this.Cursor = Cursors.Default;
             this.Enabled = true;
             this.BringToFront();
             audioList.EndUpdate();
             texList.EndUpdate();
+            spriteList.EndUpdate();
         }
 
         private void openToolStripMenuItem_Click(object sender, EventArgs e)
@@ -476,6 +572,65 @@ namespace GM2Explorer
                     }
                     bitmap.Dispose();
                 }*/
+            }
+        }
+
+        private void spriteList_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            try
+            {
+                Bitmap image = SPRTList[spriteList.SelectedIndex].sprites[0];
+                spriteDisplay.Image = image;
+                spriteNum.Value = 0;
+                spriteNum.Maximum = SPRTList[spriteList.SelectedIndex].sprites.Count - 1;
+                spriteCount.Text = "Sprite ID Max: " + spriteNum.Maximum;
+            }
+            catch
+            {
+                MessageBox.Show("Error: This sprite might be broken!", "GM2Explorer");
+            }
+        }
+
+        private void spriteNum_ValueChanged(object sender, EventArgs e)
+        {
+            Bitmap image = SPRTList[spriteList.SelectedIndex].sprites[(int)spriteNum.Value];
+            spriteDisplay.Image = image;
+        }
+
+        private void exportSpriteToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            SaveFileDialog save = new SaveFileDialog();
+            save.Filter = "PNG Image File|*.png";
+            save.DefaultExt = ".png";
+            save.AddExtension = true;
+            save.FileName = SPRTList[spriteList.SelectedIndex].name + "_" + spriteNum.Value + ".png";
+            if (save.ShowDialog() == DialogResult.OK)
+            {
+                SPRTList[spriteList.SelectedIndex].sprites[(int)spriteNum.Value].Save(save.FileName, System.Drawing.Imaging.ImageFormat.Png);
+            }
+        }
+
+        private void exportAllSpritesToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            SaveFileDialog save = new SaveFileDialog();
+            save.Filter = "";
+            save.AddExtension = false;
+            save.ValidateNames = false;
+            save.CheckFileExists = false;
+            save.CheckPathExists = true;
+            save.FileName = "Select a Folder";
+            if (save.ShowDialog() == DialogResult.OK)
+            {
+                statusProgress.Value = 0;
+                statusProgress.Maximum = SPRTList.Count;
+                for (int i = 0; i < SPRTList.Count; i++)
+                {
+                    for (int t = 0; t < SPRTList[i].sprites.Count; t++)
+                    {
+                        SPRTList[i].sprites[t].Save(Path.GetDirectoryName(save.FileName) + "\\" + SPRTList[i].name + "_" + t + ".png", System.Drawing.Imaging.ImageFormat.Png);
+                    }
+                    statusProgress.Value = i + 1;
+                }
             }
         }
     }

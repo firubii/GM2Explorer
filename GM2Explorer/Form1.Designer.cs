@@ -41,6 +41,7 @@
             this.textureContextStrip = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.saveTextureToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.exportAllTexturesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.replaceTextureToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.AUDOtab = new System.Windows.Forms.TabPage();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
             this.filelabel = new System.Windows.Forms.Label();
@@ -54,7 +55,17 @@
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
             this.statusProgress = new System.Windows.Forms.ToolStripProgressBar();
             this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
-            this.replaceTextureToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.SPRTtab = new System.Windows.Forms.TabPage();
+            this.groupBox5 = new System.Windows.Forms.GroupBox();
+            this.spriteDisplay = new System.Windows.Forms.PictureBox();
+            this.groupBox6 = new System.Windows.Forms.GroupBox();
+            this.spriteList = new System.Windows.Forms.ListBox();
+            this.spriteNum = new System.Windows.Forms.NumericUpDown();
+            this.label1 = new System.Windows.Forms.Label();
+            this.spriteCount = new System.Windows.Forms.Label();
+            this.spriteMenuStrip = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.exportSpriteToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.exportAllSpritesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             this.tabControl1.SuspendLayout();
             this.TXTRtab.SuspendLayout();
@@ -68,6 +79,12 @@
             this.groupBox4.SuspendLayout();
             this.audioContextStrip.SuspendLayout();
             this.statusStrip1.SuspendLayout();
+            this.SPRTtab.SuspendLayout();
+            this.groupBox5.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.spriteDisplay)).BeginInit();
+            this.groupBox6.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.spriteNum)).BeginInit();
+            this.spriteMenuStrip.SuspendLayout();
             this.SuspendLayout();
             // 
             // menuStrip1
@@ -99,6 +116,7 @@
             // tabControl1
             // 
             this.tabControl1.Controls.Add(this.TXTRtab);
+            this.tabControl1.Controls.Add(this.SPRTtab);
             this.tabControl1.Controls.Add(this.AUDOtab);
             this.tabControl1.Location = new System.Drawing.Point(13, 28);
             this.tabControl1.Name = "tabControl1";
@@ -164,21 +182,28 @@
             this.exportAllTexturesToolStripMenuItem,
             this.replaceTextureToolStripMenuItem});
             this.textureContextStrip.Name = "contextMenuStrip1";
-            this.textureContextStrip.Size = new System.Drawing.Size(181, 92);
+            this.textureContextStrip.Size = new System.Drawing.Size(169, 70);
             // 
             // saveTextureToolStripMenuItem
             // 
             this.saveTextureToolStripMenuItem.Name = "saveTextureToolStripMenuItem";
-            this.saveTextureToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.saveTextureToolStripMenuItem.Size = new System.Drawing.Size(168, 22);
             this.saveTextureToolStripMenuItem.Text = "Export Texture";
             this.saveTextureToolStripMenuItem.Click += new System.EventHandler(this.saveTextureToolStripMenuItem_Click);
             // 
             // exportAllTexturesToolStripMenuItem
             // 
             this.exportAllTexturesToolStripMenuItem.Name = "exportAllTexturesToolStripMenuItem";
-            this.exportAllTexturesToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.exportAllTexturesToolStripMenuItem.Size = new System.Drawing.Size(168, 22);
             this.exportAllTexturesToolStripMenuItem.Text = "Export all Textures";
             this.exportAllTexturesToolStripMenuItem.Click += new System.EventHandler(this.exportAllTexturesToolStripMenuItem_Click);
+            // 
+            // replaceTextureToolStripMenuItem
+            // 
+            this.replaceTextureToolStripMenuItem.Name = "replaceTextureToolStripMenuItem";
+            this.replaceTextureToolStripMenuItem.Size = new System.Drawing.Size(168, 22);
+            this.replaceTextureToolStripMenuItem.Text = "Replace Texture";
+            this.replaceTextureToolStripMenuItem.Click += new System.EventHandler(this.replaceTextureToolStripMenuItem_Click);
             // 
             // AUDOtab
             // 
@@ -292,12 +317,107 @@
             this.contextMenuStrip1.Name = "contextMenuStrip1";
             this.contextMenuStrip1.Size = new System.Drawing.Size(61, 4);
             // 
-            // replaceTextureToolStripMenuItem
+            // SPRTtab
             // 
-            this.replaceTextureToolStripMenuItem.Name = "replaceTextureToolStripMenuItem";
-            this.replaceTextureToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-            this.replaceTextureToolStripMenuItem.Text = "Replace Texture";
-            this.replaceTextureToolStripMenuItem.Click += new System.EventHandler(this.replaceTextureToolStripMenuItem_Click);
+            this.SPRTtab.Controls.Add(this.groupBox5);
+            this.SPRTtab.Controls.Add(this.groupBox6);
+            this.SPRTtab.Location = new System.Drawing.Point(4, 22);
+            this.SPRTtab.Name = "SPRTtab";
+            this.SPRTtab.Padding = new System.Windows.Forms.Padding(3);
+            this.SPRTtab.Size = new System.Drawing.Size(767, 384);
+            this.SPRTtab.TabIndex = 3;
+            this.SPRTtab.Text = "Sprites";
+            this.SPRTtab.UseVisualStyleBackColor = true;
+            // 
+            // groupBox5
+            // 
+            this.groupBox5.Controls.Add(this.spriteCount);
+            this.groupBox5.Controls.Add(this.label1);
+            this.groupBox5.Controls.Add(this.spriteNum);
+            this.groupBox5.Controls.Add(this.spriteDisplay);
+            this.groupBox5.Location = new System.Drawing.Point(271, 7);
+            this.groupBox5.Name = "groupBox5";
+            this.groupBox5.Size = new System.Drawing.Size(489, 371);
+            this.groupBox5.TabIndex = 4;
+            this.groupBox5.TabStop = false;
+            this.groupBox5.Text = "Preview";
+            // 
+            // spriteDisplay
+            // 
+            this.spriteDisplay.Location = new System.Drawing.Point(11, 12);
+            this.spriteDisplay.Name = "spriteDisplay";
+            this.spriteDisplay.Size = new System.Drawing.Size(350, 350);
+            this.spriteDisplay.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
+            this.spriteDisplay.TabIndex = 1;
+            this.spriteDisplay.TabStop = false;
+            // 
+            // groupBox6
+            // 
+            this.groupBox6.Controls.Add(this.spriteList);
+            this.groupBox6.Location = new System.Drawing.Point(6, 7);
+            this.groupBox6.Name = "groupBox6";
+            this.groupBox6.Size = new System.Drawing.Size(259, 371);
+            this.groupBox6.TabIndex = 3;
+            this.groupBox6.TabStop = false;
+            this.groupBox6.Text = "Sprites";
+            // 
+            // spriteList
+            // 
+            this.spriteList.ContextMenuStrip = this.spriteMenuStrip;
+            this.spriteList.FormattingEnabled = true;
+            this.spriteList.Location = new System.Drawing.Point(7, 20);
+            this.spriteList.Name = "spriteList";
+            this.spriteList.Size = new System.Drawing.Size(246, 342);
+            this.spriteList.TabIndex = 0;
+            this.spriteList.SelectedIndexChanged += new System.EventHandler(this.spriteList_SelectedIndexChanged);
+            // 
+            // spriteNum
+            // 
+            this.spriteNum.Location = new System.Drawing.Point(366, 28);
+            this.spriteNum.Name = "spriteNum";
+            this.spriteNum.Size = new System.Drawing.Size(117, 20);
+            this.spriteNum.TabIndex = 2;
+            this.spriteNum.ValueChanged += new System.EventHandler(this.spriteNum_ValueChanged);
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(363, 12);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(44, 13);
+            this.label1.TabIndex = 3;
+            this.label1.Text = "Sprite #";
+            // 
+            // spriteCount
+            // 
+            this.spriteCount.AutoSize = true;
+            this.spriteCount.Location = new System.Drawing.Point(364, 51);
+            this.spriteCount.Name = "spriteCount";
+            this.spriteCount.Size = new System.Drawing.Size(77, 13);
+            this.spriteCount.TabIndex = 4;
+            this.spriteCount.Text = "Sprite ID Max: ";
+            // 
+            // spriteMenuStrip
+            // 
+            this.spriteMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.exportSpriteToolStripMenuItem,
+            this.exportAllSpritesToolStripMenuItem});
+            this.spriteMenuStrip.Name = "spriteMenuStrip";
+            this.spriteMenuStrip.Size = new System.Drawing.Size(181, 70);
+            // 
+            // exportSpriteToolStripMenuItem
+            // 
+            this.exportSpriteToolStripMenuItem.Name = "exportSpriteToolStripMenuItem";
+            this.exportSpriteToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.exportSpriteToolStripMenuItem.Text = "Export Sprite";
+            this.exportSpriteToolStripMenuItem.Click += new System.EventHandler(this.exportSpriteToolStripMenuItem_Click);
+            // 
+            // exportAllSpritesToolStripMenuItem
+            // 
+            this.exportAllSpritesToolStripMenuItem.Name = "exportAllSpritesToolStripMenuItem";
+            this.exportAllSpritesToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.exportAllSpritesToolStripMenuItem.Text = "Export all Sprites";
+            this.exportAllSpritesToolStripMenuItem.Click += new System.EventHandler(this.exportAllSpritesToolStripMenuItem_Click);
             // 
             // Form1
             // 
@@ -330,6 +450,13 @@
             this.audioContextStrip.ResumeLayout(false);
             this.statusStrip1.ResumeLayout(false);
             this.statusStrip1.PerformLayout();
+            this.SPRTtab.ResumeLayout(false);
+            this.groupBox5.ResumeLayout(false);
+            this.groupBox5.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.spriteDisplay)).EndInit();
+            this.groupBox6.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.spriteNum)).EndInit();
+            this.spriteMenuStrip.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -363,6 +490,17 @@
         private System.Windows.Forms.ToolStripMenuItem exportAllAudioToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem replaceTextureToolStripMenuItem;
         private System.Windows.Forms.ContextMenuStrip contextMenuStrip1;
+        private System.Windows.Forms.TabPage SPRTtab;
+        private System.Windows.Forms.GroupBox groupBox5;
+        private System.Windows.Forms.PictureBox spriteDisplay;
+        private System.Windows.Forms.GroupBox groupBox6;
+        private System.Windows.Forms.ListBox spriteList;
+        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.NumericUpDown spriteNum;
+        private System.Windows.Forms.Label spriteCount;
+        private System.Windows.Forms.ContextMenuStrip spriteMenuStrip;
+        private System.Windows.Forms.ToolStripMenuItem exportSpriteToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem exportAllSpritesToolStripMenuItem;
     }
 }
 
