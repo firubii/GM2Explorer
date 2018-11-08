@@ -16,20 +16,25 @@ namespace GM2Explorer
 {
     public partial class Form1 : Form
     {
-        public struct AUDOstruct
+        public struct AudioGroup
         {
-            public string fileName;
+            public string name;
+            public List<string> fileNames;
             public List<byte[]> files;
         }
         public struct SPRT
         {
             public string name;
-            public List<Bitmap> sprites;
+            public List<ushort> x;
+            public List<ushort> y;
+            public List<ushort> width;
+            public List<ushort> height;
+            public List<ushort> sheet;
         }
 
         List<SPRT> SPRTList = new List<SPRT>();
         List<Bitmap> TXTR = new List<Bitmap>();
-        List<AUDOstruct> AUDO = new List<AUDOstruct>();
+        List<AudioGroup> AudioGroupList = new List<AudioGroup>();
 
         private AudioFileReader wavFile;
         private WaveOutEvent wavOutput;
@@ -66,7 +71,7 @@ namespace GM2Explorer
             texList.BeginUpdate();
             spriteList.BeginUpdate();
             TXTR.Clear();
-            AUDO.Clear();
+            AudioGroupList.Clear();
             SPRTList.Clear();
             statusProgress.Value = 0;
             this.Enabled = false;
@@ -117,6 +122,7 @@ namespace GM2Explorer
                 texOffset = 0x4;
             }
             this.Text = "GM2Explorer - Reading game " + projname;
+            //Begin texture and audio search
             reader.BaseStream.Seek(0, SeekOrigin.Begin);
             while (reader.BaseStream.Position < reader.BaseStream.Length)
             {
@@ -171,9 +177,9 @@ namespace GM2Explorer
                 }
                 if (magic == "AUDO") //AUDO
                 {
-                    audioList.Nodes.Add("data.win");
-                    AUDOstruct audo;
-                    audo.fileName = "data.win";
+                    AudioGroup audo;
+                    audo.name = "";
+                    audo.fileNames = new List<string>();
                     audo.files = new List<byte[]>();
                     //Console.WriteLine("Found AUDO Section at 0x" + currentOffset.ToString("X8"));
                     uint size = reader.ReadUInt32() + 8;
@@ -198,12 +204,8 @@ namespace GM2Explorer
                         audo.files.Add(audio.ToArray());
                         audio.Clear();
                     }
-                    AUDO.Add(audo);
+                    AudioGroupList.Add(audo);
                     fileOffsets.Clear();
-                    for (int f = 0; f < audo.files.Count; f++)
-                    {
-                        audioList.Nodes[0].Nodes.Add("audio_" + f);
-                    }
                     break;
                 }
             }
@@ -227,23 +229,15 @@ namespace GM2Explorer
                     }
                     for (int i = 0; i < spriteCount; i++)
                     {
-                        SPRT sprt;
-                        sprt.sprites = new List<Bitmap>();
+                        SPRT sprt = new SPRT();
+                        sprt.x = new List<ushort>();
+                        sprt.y = new List<ushort>();
+                        sprt.width = new List<ushort>();
+                        sprt.height = new List<ushort>();
+                        sprt.sheet = new List<ushort>();
                         reader.BaseStream.Seek(spriteOffsets[i], SeekOrigin.Begin);
                         uint nameOffset = reader.ReadUInt32();
-                        uint width = reader.ReadUInt32();
-                        uint height = reader.ReadUInt32();
-                        uint marginL = reader.ReadUInt32();
-                        uint marginR = reader.ReadUInt32();
-                        uint marginB = reader.ReadUInt32();
-                        uint marginT = reader.ReadUInt32();
-                        uint unk1 = reader.ReadUInt32();
-                        uint unk2 = reader.ReadUInt32();
-                        uint unk3 = reader.ReadUInt32();
-                        uint bboxMode = reader.ReadUInt32();
-                        uint sepMasks = reader.ReadUInt32();
-                        uint originX = reader.ReadUInt32();
-                        uint originY = reader.ReadUInt32();
+                        reader.BaseStream.Seek(0x34, SeekOrigin.Current);
                         if (version == 2)
                         {
                             reader.BaseStream.Seek(0x14, SeekOrigin.Current);
@@ -257,19 +251,20 @@ namespace GM2Explorer
                         }
                         for (int t = 0; t < texCount; t++)
                         {
-                            reader.BaseStream.Seek(texOffsets[t], SeekOrigin.Begin);
-                            ushort x = reader.ReadUInt16();
-                            ushort y = reader.ReadUInt16();
-                            ushort twidth = reader.ReadUInt16();
-                            ushort theight = reader.ReadUInt16();
-                            ushort renderx = reader.ReadUInt16();
-                            ushort rendery = reader.ReadUInt16();
-                            ushort boundingx = reader.ReadUInt16();
-                            ushort boundingy = reader.ReadUInt16();
-                            ushort boundingw = reader.ReadUInt16();
-                            ushort boundingh = reader.ReadUInt16();
-                            ushort spritesheet = reader.ReadUInt16();
-                            sprt.sprites.Add(Crop(TXTR[spritesheet], new Rectangle(x, y, twidth, theight)));
+                            try
+                            {
+                                reader.BaseStream.Seek(texOffsets[t], SeekOrigin.Begin);
+                                sprt.x.Add(reader.ReadUInt16());
+                                sprt.y.Add(reader.ReadUInt16());
+                                sprt.width.Add(reader.ReadUInt16());
+                                sprt.height.Add(reader.ReadUInt16());
+                                reader.BaseStream.Seek(0xC, SeekOrigin.Current);
+                                sprt.sheet.Add(reader.ReadUInt16());
+                            }
+                            catch
+                            {
+                                Console.WriteLine("Something happened!!\ntex:" + t + "\nCurrent position: 0x" + reader.BaseStream.Position.ToString("X8"));
+                            }
                         }
                         reader.BaseStream.Seek(nameOffset - 4, SeekOrigin.Begin);
                         uint nameLength = reader.ReadUInt32();
@@ -298,9 +293,9 @@ namespace GM2Explorer
                     string magic = string.Join("", Encoding.UTF8.GetChars(magicBytes));
                     if (magic == "AUDO") //AUDO
                     {
-                        AUDOstruct audo;
-                        audioList.Nodes.Add(audiogroups[i].Replace(path + "\\", ""));
-                        audo.fileName = audiogroups[i].Replace(path, "");
+                        AudioGroup audo;
+                        audo.name = "";
+                        audo.fileNames = new List<string>();
                         audo.files = new List<byte[]>();
                         //Console.WriteLine("Found AUDO Section at 0x" + currentOffset.ToString("X8"));
                         uint size = reader.ReadUInt32() + 8;
@@ -325,16 +320,84 @@ namespace GM2Explorer
                             audo.files.Add(audio.ToArray());
                             audio.Clear();
                         }
-                        AUDO.Add(audo);
-                        for (int f = 0; f < audo.files.Count; f++)
-                        {
-                            audioList.Nodes[audioList.Nodes.Count - 1].Nodes.Add("audio_" + f);
-                        }
+                        AudioGroupList.Add(audo);
                         break;
                     }
                 }
             }
             reader.Dispose();
+            reader = new BinaryReader(new MemoryStream(file));
+            while (reader.BaseStream.Position < reader.BaseStream.Length)
+            {
+                uint currentOffset = (uint)reader.BaseStream.Position;
+                byte[] magicBytes = reader.ReadBytes(4);
+                string magic = string.Join("", Encoding.UTF8.GetChars(magicBytes));
+                if (magic == "AGRP")
+                {
+                    uint size = reader.ReadUInt32() + 8;
+                    uint entryCount = reader.ReadUInt32();
+                    uint entryListStart = (uint)reader.BaseStream.Position;
+                    List<uint> entryOffsets = new List<uint>();
+                    for (int i = 0; i < entryCount; i++)
+                    {
+                        entryOffsets.Add(reader.ReadUInt32());
+                    }
+                    for (int i = 0; i < entryCount; i++)
+                    {
+                        AudioGroup audo = AudioGroupList[i];
+                        reader.BaseStream.Seek(entryOffsets[i], SeekOrigin.Begin);
+                        uint nameOffset = reader.ReadUInt32();
+                        reader.BaseStream.Seek(nameOffset - 4, SeekOrigin.Begin);
+                        uint nameLength = reader.ReadUInt32();
+                        string groupName = string.Join("", reader.ReadChars((int)nameLength));
+                        audo.name = groupName;
+                        AudioGroupList[i] = audo;
+                    }
+                    break;
+                }
+            }
+            for (int i = 0; i < AudioGroupList.Count; i++)
+            {
+                for (int f = 0; f < AudioGroupList[i].files.Count; f++)
+                {
+                    AudioGroupList[i].fileNames.Add("");
+                }
+            }
+            reader.BaseStream.Seek(0, SeekOrigin.Begin);
+            while (reader.BaseStream.Position < reader.BaseStream.Length)
+            {
+                uint currentOffset = (uint)reader.BaseStream.Position;
+                byte[] magicBytes = reader.ReadBytes(4);
+                string magic = string.Join("", Encoding.UTF8.GetChars(magicBytes));
+                if (magic == "SOND")
+                {
+                    uint size = reader.ReadUInt32() + 8;
+                    uint entryCount = reader.ReadUInt32();
+                    uint entryListStart = (uint)reader.BaseStream.Position;
+                    List<uint> entryOffsets = new List<uint>();
+                    for (int i = 0; i < entryCount; i++)
+                    {
+                        entryOffsets.Add(reader.ReadUInt32());
+                    }
+                    for (int i = 0; i < entryCount; i++)
+                    {
+                        reader.BaseStream.Seek(entryOffsets[i], SeekOrigin.Begin);
+                        uint nameOffset = reader.ReadUInt32();
+                        long pos = reader.BaseStream.Position;
+                        reader.BaseStream.Seek(nameOffset - 4, SeekOrigin.Begin);
+                        uint nameLength = reader.ReadUInt32();
+                        string audioName = string.Join("", reader.ReadChars((int)nameLength));
+                        reader.BaseStream.Seek(pos + 0x18, SeekOrigin.Begin);
+                        int groupIndex = reader.ReadInt32();
+                        int audioIndex = reader.ReadInt32();
+                        if (audioIndex != -1)
+                        {
+                            AudioGroupList[groupIndex].fileNames[audioIndex] = audioName;
+                        }
+                    }
+                    break;
+                }
+            }
             for (int i = 0; i < TXTR.Count; i++)
             {
                 texList.Items.Add("tex_" + i);
@@ -342,6 +405,21 @@ namespace GM2Explorer
             for (int i = 0; i < SPRTList.Count; i++)
             {
                 spriteList.Items.Add(SPRTList[i].name);
+            }
+            for (int i = 0; i < AudioGroupList.Count; i++)
+            {
+                audioList.Nodes.Add(AudioGroupList[i].name);
+                for (int a = 0; a < AudioGroupList[i].files.Count; a++)
+                {
+                    if (AudioGroupList[i].fileNames[a] != "")
+                    {
+                        audioList.Nodes[i].Nodes.Add(AudioGroupList[i].fileNames[a]);
+                    }
+                    else
+                    {
+                        audioList.Nodes[i].Nodes.Add("audio_" + a);
+                    }
+                }
             }
             this.Text = "GM2Explorer";
             this.Cursor = Cursors.Default;
@@ -437,7 +515,7 @@ namespace GM2Explorer
                     }
                     Directory.CreateDirectory(@"C:\gmetemp");
 
-                    loadedAudio = AUDO[audioList.SelectedNode.Parent.Index].files[audioList.SelectedNode.Index];
+                    loadedAudio = AudioGroupList[audioList.SelectedNode.Parent.Index].files[audioList.SelectedNode.Index];
                     wavOutput = new WaveOutEvent();
                     if (BitConverter.ToUInt32(loadedAudio, 0) == 0x5367674F)
                     {
@@ -499,7 +577,7 @@ namespace GM2Explorer
 
         private void exportAudioToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            loadedAudio = AUDO[audioList.SelectedNode.Parent.Index].files[audioList.SelectedNode.Index];
+            loadedAudio = AudioGroupList[audioList.SelectedNode.Parent.Index].files[audioList.SelectedNode.Index];
             SaveFileDialog save = new SaveFileDialog();
             string extension = ".wav";
             save.Filter = "WAV Audio File|*.wav";
@@ -528,26 +606,35 @@ namespace GM2Explorer
             save.FileName = "Select a Folder";
             if (save.ShowDialog() == DialogResult.OK)
             {
-                for (int i = 0; i < AUDO.Count; i++)
+                for (int i = 0; i < AudioGroupList.Count; i++)
                 {
-                    string dir = Path.GetDirectoryName(save.FileName) + "\\" + AUDO[i].fileName;
+                    string dir = Path.GetDirectoryName(save.FileName) + "\\" + AudioGroupList[i].name;
                     if (Directory.Exists(dir))
                     {
                         Directory.Delete(dir, true);
                     }
                     Directory.CreateDirectory(dir);
                     statusProgress.Value = 0;
-                    statusProgress.Maximum = AUDO[i].files.Count;
-                    for (int f = 0; f < AUDO[i].files.Count; f++)
+                    statusProgress.Maximum = AudioGroupList[i].files.Count;
+                    for (int f = 0; f < AudioGroupList[i].files.Count; f++)
                     {
                         statusProgress.Value++;
-                        if (BitConverter.ToUInt32(AUDO[i].files[f], 0) == 0x5367674F)
+                        string extension = "";
+                        if (BitConverter.ToUInt32(AudioGroupList[i].files[f], 0) == 0x5367674F)
                         {
-                            File.WriteAllBytes(dir + "\\audio_" + f + ".ogg", AUDO[i].files[f]);
+                            extension = ".ogg";
                         }
-                        else if (BitConverter.ToUInt32(AUDO[i].files[f], 0) == 0x46464952)
+                        else if (BitConverter.ToUInt32(AudioGroupList[i].files[f], 0) == 0x46464952)
                         {
-                            File.WriteAllBytes(dir + "\\audio_" + f + ".wav", AUDO[i].files[f]);
+                            extension = ".wav";
+                        }
+                        if (AudioGroupList[i].fileNames[f] != "")
+                        {
+                            File.WriteAllBytes(dir + "\\" + AudioGroupList[i].fileNames[f] + extension, AudioGroupList[i].files[f]);
+                        }
+                        else
+                        {
+                            File.WriteAllBytes(dir + "\\audio_" + f + extension, AudioGroupList[i].files[f]);
                         }
                     }
                 }
@@ -579,11 +666,13 @@ namespace GM2Explorer
         {
             try
             {
-                Bitmap image = SPRTList[spriteList.SelectedIndex].sprites[0];
+                SPRT sprt = SPRTList[spriteList.SelectedIndex];
+                Bitmap image = Crop(TXTR[sprt.sheet[0]], new Rectangle((int)sprt.x[0], (int)sprt.y[0], (int)sprt.width[0], (int)sprt.height[0]));
+                
                 spriteDisplay.Image = image;
                 spriteNum.Value = 0;
-                spriteNum.Maximum = SPRTList[spriteList.SelectedIndex].sprites.Count - 1;
-                spriteCount.Text = "Sprite ID Max: " + spriteNum.Maximum;
+                spriteNum.Maximum = SPRTList[spriteList.SelectedIndex].sheet.Count - 1;
+                spriteCount.Text = "/" + spriteNum.Maximum;
             }
             catch
             {
@@ -593,7 +682,8 @@ namespace GM2Explorer
 
         private void spriteNum_ValueChanged(object sender, EventArgs e)
         {
-            Bitmap image = SPRTList[spriteList.SelectedIndex].sprites[(int)spriteNum.Value];
+            SPRT sprt = SPRTList[spriteList.SelectedIndex];
+            Bitmap image = Crop(TXTR[sprt.sheet[(int)spriteNum.Value]], new Rectangle((int)sprt.x[(int)spriteNum.Value], (int)sprt.y[(int)spriteNum.Value], (int)sprt.width[(int)spriteNum.Value], (int)sprt.height[(int)spriteNum.Value]));
             spriteDisplay.Image = image;
         }
 
@@ -606,7 +696,8 @@ namespace GM2Explorer
             save.FileName = SPRTList[spriteList.SelectedIndex].name + "_" + spriteNum.Value + ".png";
             if (save.ShowDialog() == DialogResult.OK)
             {
-                SPRTList[spriteList.SelectedIndex].sprites[(int)spriteNum.Value].Save(save.FileName, System.Drawing.Imaging.ImageFormat.Png);
+                SPRT sprt = SPRTList[spriteList.SelectedIndex];
+                Crop(TXTR[sprt.sheet[(int)spriteNum.Value]], new Rectangle((int)sprt.x[(int)spriteNum.Value], (int)sprt.y[(int)spriteNum.Value], (int)sprt.width[(int)spriteNum.Value], (int)sprt.height[(int)spriteNum.Value])).Save(save.FileName, System.Drawing.Imaging.ImageFormat.Png);
             }
         }
 
@@ -625,9 +716,10 @@ namespace GM2Explorer
                 statusProgress.Maximum = SPRTList.Count;
                 for (int i = 0; i < SPRTList.Count; i++)
                 {
-                    for (int t = 0; t < SPRTList[i].sprites.Count; t++)
+                    SPRT sprt = SPRTList[i];
+                    for (int t = 0; t < SPRTList[i].sheet.Count; t++)
                     {
-                        SPRTList[i].sprites[t].Save(Path.GetDirectoryName(save.FileName) + "\\" + SPRTList[i].name + "_" + t + ".png", System.Drawing.Imaging.ImageFormat.Png);
+                        Crop(TXTR[sprt.sheet[t]], new Rectangle((int)sprt.x[t], (int)sprt.y[t], (int)sprt.width[t], (int)sprt.height[t])).Save(Path.GetDirectoryName(save.FileName) + "\\" + SPRTList[i].name + "_" + t + ".png", System.Drawing.Imaging.ImageFormat.Png);
                     }
                     statusProgress.Value = i + 1;
                 }
