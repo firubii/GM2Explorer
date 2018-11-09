@@ -641,27 +641,6 @@ namespace GM2Explorer
             }
         }
 
-        private void replaceTextureToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            OpenFileDialog open = new OpenFileDialog();
-            open.Filter = "Portable Network Graphic Image Files|*.png";
-            open.DefaultExt = ".png";
-            if (open.ShowDialog() == DialogResult.OK)
-            {
-                /*if (File.Exists(open.FileName))
-                {
-                    Bitmap bitmap = new Bitmap(open.FileName);
-                    if (bitmap.Height == TXTR[texList.SelectedIndex].Height && bitmap.Width == TXTR[texList.SelectedIndex].Width)
-                    {
-                        TXTR[texList.SelectedIndex].Dispose();
-                        TXTR[texList.SelectedIndex] = bitmap;
-                        MessageBox.Show("Successfully replaced texture", "GM2Explorer");
-                    }
-                    bitmap.Dispose();
-                }*/
-            }
-        }
-
         private void spriteList_SelectedIndexChanged(object sender, EventArgs e)
         {
             try

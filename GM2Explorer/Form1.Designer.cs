@@ -40,7 +40,6 @@
             this.textureContextStrip = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.saveTextureToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.exportAllTexturesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.replaceTextureToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.SPRTtab = new System.Windows.Forms.TabPage();
             this.groupBox5 = new System.Windows.Forms.GroupBox();
             this.spriteCount = new System.Windows.Forms.Label();
@@ -63,9 +62,8 @@
             this.exportAllAudioToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
             this.statusProgress = new System.Windows.Forms.ToolStripProgressBar();
-            this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
-            this.spriteDisplay = new GM2Explorer.PictureBoxNearestNeighbor();
             this.textureDisplay = new GM2Explorer.PictureBoxNearestNeighbor();
+            this.spriteDisplay = new GM2Explorer.PictureBoxNearestNeighbor();
             this.menuStrip1.SuspendLayout();
             this.tabControl1.SuspendLayout();
             this.TXTRtab.SuspendLayout();
@@ -83,8 +81,8 @@
             this.groupBox4.SuspendLayout();
             this.audioContextStrip.SuspendLayout();
             this.statusStrip1.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.spriteDisplay)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.textureDisplay)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.spriteDisplay)).BeginInit();
             this.SuspendLayout();
             // 
             // menuStrip1
@@ -170,10 +168,9 @@
             // 
             this.textureContextStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.saveTextureToolStripMenuItem,
-            this.exportAllTexturesToolStripMenuItem,
-            this.replaceTextureToolStripMenuItem});
+            this.exportAllTexturesToolStripMenuItem});
             this.textureContextStrip.Name = "contextMenuStrip1";
-            this.textureContextStrip.Size = new System.Drawing.Size(169, 70);
+            this.textureContextStrip.Size = new System.Drawing.Size(169, 48);
             // 
             // saveTextureToolStripMenuItem
             // 
@@ -188,13 +185,6 @@
             this.exportAllTexturesToolStripMenuItem.Size = new System.Drawing.Size(168, 22);
             this.exportAllTexturesToolStripMenuItem.Text = "Export all Textures";
             this.exportAllTexturesToolStripMenuItem.Click += new System.EventHandler(this.exportAllTexturesToolStripMenuItem_Click);
-            // 
-            // replaceTextureToolStripMenuItem
-            // 
-            this.replaceTextureToolStripMenuItem.Name = "replaceTextureToolStripMenuItem";
-            this.replaceTextureToolStripMenuItem.Size = new System.Drawing.Size(168, 22);
-            this.replaceTextureToolStripMenuItem.Text = "Replace Texture";
-            this.replaceTextureToolStripMenuItem.Click += new System.EventHandler(this.replaceTextureToolStripMenuItem_Click);
             // 
             // SPRTtab
             // 
@@ -396,28 +386,25 @@
             this.statusProgress.Name = "statusProgress";
             this.statusProgress.Size = new System.Drawing.Size(100, 16);
             // 
-            // contextMenuStrip1
-            // 
-            this.contextMenuStrip1.Name = "contextMenuStrip1";
-            this.contextMenuStrip1.Size = new System.Drawing.Size(61, 4);
-            // 
-            // spriteDisplay
-            // 
-            this.spriteDisplay.Location = new System.Drawing.Point(10, 12);
-            this.spriteDisplay.Name = "spriteDisplay";
-            this.spriteDisplay.Size = new System.Drawing.Size(350, 350);
-            this.spriteDisplay.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
-            this.spriteDisplay.TabIndex = 5;
-            this.spriteDisplay.TabStop = false;
-            // 
             // textureDisplay
             // 
+            this.textureDisplay.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(240)))), ((int)(((byte)(240)))), ((int)(((byte)(240)))));
             this.textureDisplay.Location = new System.Drawing.Point(74, 12);
             this.textureDisplay.Name = "textureDisplay";
             this.textureDisplay.Size = new System.Drawing.Size(350, 350);
             this.textureDisplay.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
             this.textureDisplay.TabIndex = 2;
             this.textureDisplay.TabStop = false;
+            // 
+            // spriteDisplay
+            // 
+            this.spriteDisplay.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(240)))), ((int)(((byte)(240)))), ((int)(((byte)(240)))));
+            this.spriteDisplay.Location = new System.Drawing.Point(10, 12);
+            this.spriteDisplay.Name = "spriteDisplay";
+            this.spriteDisplay.Size = new System.Drawing.Size(350, 350);
+            this.spriteDisplay.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
+            this.spriteDisplay.TabIndex = 5;
+            this.spriteDisplay.TabStop = false;
             // 
             // Form1
             // 
@@ -455,8 +442,8 @@
             this.audioContextStrip.ResumeLayout(false);
             this.statusStrip1.ResumeLayout(false);
             this.statusStrip1.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.spriteDisplay)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.textureDisplay)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.spriteDisplay)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -487,8 +474,6 @@
         private System.Windows.Forms.ContextMenuStrip audioContextStrip;
         private System.Windows.Forms.ToolStripMenuItem exportAudioToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem exportAllAudioToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem replaceTextureToolStripMenuItem;
-        private System.Windows.Forms.ContextMenuStrip contextMenuStrip1;
         private System.Windows.Forms.TabPage SPRTtab;
         private System.Windows.Forms.GroupBox groupBox5;
         private System.Windows.Forms.GroupBox groupBox6;
