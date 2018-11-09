@@ -544,11 +544,11 @@ namespace GM2Explorer
                 if (wavOutput.PlaybackState == PlaybackState.Playing)
                 {
                     playPause.Text = "Play";
-                    wavOutput.Stop();
+                    wavOutput.Pause();
                 }
                 else
                 {
-                    playPause.Text = "Stop";
+                    playPause.Text = "Pause";
                     wavOutput.Play();
                 }
             }
@@ -672,7 +672,14 @@ namespace GM2Explorer
             save.Filter = "PNG Image File|*.png";
             save.DefaultExt = ".png";
             save.AddExtension = true;
-            save.FileName = SPRTList[spriteList.SelectedIndex].name + "_" + spriteNum.Value + ".png";
+            if (SPRTList[spriteList.SelectedIndex].sheet.Count > 1)
+            {
+                save.FileName = SPRTList[spriteList.SelectedIndex].name + "_" + spriteNum.Value + ".png";
+            }
+            else
+            {
+                save.FileName = SPRTList[spriteList.SelectedIndex].name + ".png";
+            }
             if (save.ShowDialog() == DialogResult.OK)
             {
                 SPRT sprt = SPRTList[spriteList.SelectedIndex];
@@ -696,9 +703,20 @@ namespace GM2Explorer
                 for (int i = 0; i < SPRTList.Count; i++)
                 {
                     SPRT sprt = SPRTList[i];
-                    for (int t = 0; t < SPRTList[i].sheet.Count; t++)
+                    if (SPRTList[i].sheet.Count > 1)
                     {
-                        Crop(TXTR[sprt.sheet[t]], new Rectangle((int)sprt.x[t], (int)sprt.y[t], (int)sprt.width[t], (int)sprt.height[t])).Save(Path.GetDirectoryName(save.FileName) + "\\" + SPRTList[i].name + "_" + t + ".png", System.Drawing.Imaging.ImageFormat.Png);
+                        for (int t = 0; t < SPRTList[i].sheet.Count; t++)
+                        {
+                            Crop(TXTR[sprt.sheet[t]], new Rectangle((int)sprt.x[t], (int)sprt.y[t], (int)sprt.width[t], (int)sprt.height[t])).Save(Path.GetDirectoryName(save.FileName) + "\\" + SPRTList[i].name + "_" + t + ".png", System.Drawing.Imaging.ImageFormat.Png);
+                        }
+                    }
+                    else
+                    {
+                        try
+                        {
+                            Crop(TXTR[sprt.sheet[0]], new Rectangle((int)sprt.x[0], (int)sprt.y[0], (int)sprt.width[0], (int)sprt.height[0])).Save(Path.GetDirectoryName(save.FileName) + "\\" + SPRTList[i].name + ".png", System.Drawing.Imaging.ImageFormat.Png);
+                        }
+                        catch { }
                     }
                     statusProgress.Value = i + 1;
                 }
