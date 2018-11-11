@@ -62,8 +62,10 @@
             this.exportAllAudioToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
             this.statusProgress = new System.Windows.Forms.ToolStripProgressBar();
+            this.stop = new System.Windows.Forms.Button();
             this.textureDisplay = new GM2Explorer.PictureBoxNearestNeighbor();
             this.spriteDisplay = new GM2Explorer.PictureBoxNearestNeighbor();
+            this.loop = new System.Windows.Forms.CheckBox();
             this.menuStrip1.SuspendLayout();
             this.tabControl1.SuspendLayout();
             this.TXTRtab.SuspendLayout();
@@ -293,6 +295,8 @@
             // 
             // groupBox3
             // 
+            this.groupBox3.Controls.Add(this.loop);
+            this.groupBox3.Controls.Add(this.stop);
             this.groupBox3.Controls.Add(this.filelabel);
             this.groupBox3.Controls.Add(this.playPause);
             this.groupBox3.Controls.Add(this.trackBar1);
@@ -314,7 +318,7 @@
             // 
             // playPause
             // 
-            this.playPause.Location = new System.Drawing.Point(193, 224);
+            this.playPause.Location = new System.Drawing.Point(165, 224);
             this.playPause.Name = "playPause";
             this.playPause.Size = new System.Drawing.Size(75, 23);
             this.playPause.TabIndex = 1;
@@ -386,6 +390,16 @@
             this.statusProgress.Name = "statusProgress";
             this.statusProgress.Size = new System.Drawing.Size(100, 16);
             // 
+            // stop
+            // 
+            this.stop.Location = new System.Drawing.Point(246, 224);
+            this.stop.Name = "stop";
+            this.stop.Size = new System.Drawing.Size(75, 23);
+            this.stop.TabIndex = 5;
+            this.stop.Text = "Stop";
+            this.stop.UseVisualStyleBackColor = true;
+            this.stop.Click += new System.EventHandler(this.stop_Click);
+            // 
             // textureDisplay
             // 
             this.textureDisplay.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(240)))), ((int)(((byte)(240)))), ((int)(((byte)(240)))));
@@ -405,6 +419,16 @@
             this.spriteDisplay.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
             this.spriteDisplay.TabIndex = 5;
             this.spriteDisplay.TabStop = false;
+            // 
+            // loop
+            // 
+            this.loop.AutoSize = true;
+            this.loop.Location = new System.Drawing.Point(109, 228);
+            this.loop.Name = "loop";
+            this.loop.Size = new System.Drawing.Size(50, 17);
+            this.loop.TabIndex = 6;
+            this.loop.Text = "Loop";
+            this.loop.UseVisualStyleBackColor = true;
             // 
             // Form1
             // 
@@ -486,6 +510,8 @@
         private System.Windows.Forms.ToolStripMenuItem exportAllSpritesToolStripMenuItem;
         private PictureBoxNearestNeighbor spriteDisplay;
         private PictureBoxNearestNeighbor textureDisplay;
+        private System.Windows.Forms.Button stop;
+        private System.Windows.Forms.CheckBox loop;
     }
 }
 

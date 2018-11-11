@@ -41,10 +41,32 @@ namespace GM2Explorer
         private VorbisWaveReader vorbisFile;
         byte[] loadedAudio;
         bool isOgg = false;
+        bool forceStop = false;
 
         public Form1()
         {
             InitializeComponent();
+        }
+
+        private void WavOutput_PlaybackStopped(object sender, StoppedEventArgs e)
+        {
+            if (!isOgg)
+            {
+                wavFile.Position = 0;
+            }
+            else
+            {
+                vorbisFile.Position = 0;
+            }
+            if (loop.Checked && !forceStop)
+            {
+                wavOutput.Play();
+                forceStop = false;
+            }
+            else
+            {
+                playPause.Text = "Play";
+            }
         }
 
         public Bitmap Crop(Bitmap b, Rectangle r)
@@ -421,6 +443,8 @@ namespace GM2Explorer
                     }
                 }
             }
+            file = new byte[] { };
+            reader.Dispose();
             this.Text = "GM2Explorer";
             this.Cursor = Cursors.Default;
             this.Enabled = true;
@@ -492,6 +516,7 @@ namespace GM2Explorer
 
         private void audioList_AfterSelect(object sender, TreeViewEventArgs e)
         {
+            forceStop = true;
             if (audioList.SelectedNode.Parent != null)
             {
                 try
@@ -516,7 +541,9 @@ namespace GM2Explorer
                     Directory.CreateDirectory(@"C:\gmetemp");
 
                     loadedAudio = AudioGroupList[audioList.SelectedNode.Parent.Index].files[audioList.SelectedNode.Index];
+
                     wavOutput = new WaveOutEvent();
+                    wavOutput.PlaybackStopped += WavOutput_PlaybackStopped;
                     if (BitConverter.ToUInt32(loadedAudio, 0) == 0x5367674F)
                     {
                         File.WriteAllBytes(@"C:\gmetemp\temp.ogg", loadedAudio);
@@ -548,6 +575,7 @@ namespace GM2Explorer
                 }
                 else
                 {
+                    forceStop = false;
                     playPause.Text = "Pause";
                     wavOutput.Play();
                 }
@@ -719,6 +747,23 @@ namespace GM2Explorer
                         catch { }
                     }
                     statusProgress.Value = i + 1;
+                }
+            }
+        }
+
+        private void stop_Click(object sender, EventArgs e)
+        {
+            if (wavOutput != null)
+            {
+                forceStop = true;
+                wavOutput.Stop();
+                if (!isOgg)
+                {
+                    wavFile.Position = 0;
+                }
+                else
+                {
+                    vorbisFile.Position = 0;
                 }
             }
         }
