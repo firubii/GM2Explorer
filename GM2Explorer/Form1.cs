@@ -366,14 +366,17 @@ namespace GM2Explorer
                     }
                     for (int i = 0; i < entryCount; i++)
                     {
-                        AudioGroup audo = AudioGroupList[i];
-                        reader.BaseStream.Seek(entryOffsets[i], SeekOrigin.Begin);
-                        uint nameOffset = reader.ReadUInt32();
-                        reader.BaseStream.Seek(nameOffset - 4, SeekOrigin.Begin);
-                        uint nameLength = reader.ReadUInt32();
-                        string groupName = string.Join("", reader.ReadChars((int)nameLength));
-                        audo.name = groupName;
-                        AudioGroupList[i] = audo;
+                        try
+                        {
+                            AudioGroup audo = AudioGroupList[i];
+                            reader.BaseStream.Seek(entryOffsets[i], SeekOrigin.Begin);
+                            uint nameOffset = reader.ReadUInt32();
+                            reader.BaseStream.Seek(nameOffset - 4, SeekOrigin.Begin);
+                            uint nameLength = reader.ReadUInt32();
+                            string groupName = string.Join("", reader.ReadChars((int)nameLength));
+                            audo.name = groupName;
+                            AudioGroupList[i] = audo;
+                        } catch { }
                     }
                     break;
                 }
@@ -445,6 +448,7 @@ namespace GM2Explorer
             }
             file = new byte[] { };
             reader.Dispose();
+            sNum.Maximum = TXTR.Count - 1;
             this.Text = "GM2Explorer";
             this.Cursor = Cursors.Default;
             this.Enabled = true;
@@ -476,8 +480,11 @@ namespace GM2Explorer
 
         private void texList_SelectedIndexChanged(object sender, EventArgs e)
         {
-            Bitmap image = TXTR[texList.SelectedIndex];
-            textureDisplay.Image = image;
+            if (texList.SelectedIndex <= TXTR.Count - 1)
+            {
+                Bitmap image = TXTR[texList.SelectedIndex];
+                textureDisplay.Image = image;
+            }
         }
 
         private void saveTextureToolStripMenuItem_Click(object sender, EventArgs e)
@@ -671,20 +678,27 @@ namespace GM2Explorer
 
         private void spriteList_SelectedIndexChanged(object sender, EventArgs e)
         {
+            SPRT sprt = SPRTList[spriteList.SelectedIndex];
             try
             {
-                SPRT sprt = SPRTList[spriteList.SelectedIndex];
                 Bitmap image = Crop(TXTR[sprt.sheet[0]], new Rectangle((int)sprt.x[0], (int)sprt.y[0], (int)sprt.width[0], (int)sprt.height[0]));
                 
                 spriteDisplay.Image = image;
                 spriteNum.Value = 0;
                 spriteNum.Maximum = SPRTList[spriteList.SelectedIndex].sheet.Count - 1;
                 spriteCount.Text = "/" + spriteNum.Maximum;
+
+                
             }
             catch
             {
                 MessageBox.Show("Error: This sprite might be broken!", "GM2Explorer");
             }
+            xNum.Value = sprt.x[0];
+            yNum.Value = sprt.y[0];
+            wNum.Value = sprt.width[0];
+            hNum.Value = sprt.height[0];
+            sNum.Value = sprt.sheet[0];
         }
 
         private void spriteNum_ValueChanged(object sender, EventArgs e)
@@ -692,6 +706,12 @@ namespace GM2Explorer
             SPRT sprt = SPRTList[spriteList.SelectedIndex];
             Bitmap image = Crop(TXTR[sprt.sheet[(int)spriteNum.Value]], new Rectangle((int)sprt.x[(int)spriteNum.Value], (int)sprt.y[(int)spriteNum.Value], (int)sprt.width[(int)spriteNum.Value], (int)sprt.height[(int)spriteNum.Value]));
             spriteDisplay.Image = image;
+
+            xNum.Value = sprt.x[(int)spriteNum.Value];
+            yNum.Value = sprt.y[(int)spriteNum.Value];
+            wNum.Value = sprt.width[(int)spriteNum.Value];
+            hNum.Value = sprt.height[(int)spriteNum.Value];
+            sNum.Value = sprt.sheet[(int)spriteNum.Value];
         }
 
         private void exportSpriteToolStripMenuItem_Click(object sender, EventArgs e)

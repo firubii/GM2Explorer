@@ -52,6 +52,8 @@
             this.exportAllSpritesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.AUDOtab = new System.Windows.Forms.TabPage();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
+            this.loop = new System.Windows.Forms.CheckBox();
+            this.stop = new System.Windows.Forms.Button();
             this.filelabel = new System.Windows.Forms.Label();
             this.playPause = new System.Windows.Forms.Button();
             this.trackBar1 = new System.Windows.Forms.TrackBar();
@@ -62,10 +64,19 @@
             this.exportAllAudioToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
             this.statusProgress = new System.Windows.Forms.ToolStripProgressBar();
-            this.stop = new System.Windows.Forms.Button();
+            this.groupBox7 = new System.Windows.Forms.GroupBox();
+            this.label2 = new System.Windows.Forms.Label();
+            this.xNum = new System.Windows.Forms.NumericUpDown();
+            this.yNum = new System.Windows.Forms.NumericUpDown();
+            this.label3 = new System.Windows.Forms.Label();
+            this.wNum = new System.Windows.Forms.NumericUpDown();
+            this.label4 = new System.Windows.Forms.Label();
+            this.hNum = new System.Windows.Forms.NumericUpDown();
+            this.label5 = new System.Windows.Forms.Label();
+            this.sNum = new System.Windows.Forms.NumericUpDown();
+            this.label6 = new System.Windows.Forms.Label();
             this.textureDisplay = new GM2Explorer.PictureBoxNearestNeighbor();
             this.spriteDisplay = new GM2Explorer.PictureBoxNearestNeighbor();
-            this.loop = new System.Windows.Forms.CheckBox();
             this.menuStrip1.SuspendLayout();
             this.tabControl1.SuspendLayout();
             this.TXTRtab.SuspendLayout();
@@ -83,6 +94,12 @@
             this.groupBox4.SuspendLayout();
             this.audioContextStrip.SuspendLayout();
             this.statusStrip1.SuspendLayout();
+            this.groupBox7.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.xNum)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.yNum)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.wNum)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.hNum)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.sNum)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.textureDisplay)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.spriteDisplay)).BeginInit();
             this.SuspendLayout();
@@ -202,6 +219,7 @@
             // 
             // groupBox5
             // 
+            this.groupBox5.Controls.Add(this.groupBox7);
             this.groupBox5.Controls.Add(this.spriteDisplay);
             this.groupBox5.Controls.Add(this.spriteCount);
             this.groupBox5.Controls.Add(this.label1);
@@ -307,6 +325,26 @@
             this.groupBox3.TabStop = false;
             this.groupBox3.Text = "Preview";
             // 
+            // loop
+            // 
+            this.loop.AutoSize = true;
+            this.loop.Location = new System.Drawing.Point(109, 228);
+            this.loop.Name = "loop";
+            this.loop.Size = new System.Drawing.Size(50, 17);
+            this.loop.TabIndex = 6;
+            this.loop.Text = "Loop";
+            this.loop.UseVisualStyleBackColor = true;
+            // 
+            // stop
+            // 
+            this.stop.Location = new System.Drawing.Point(246, 224);
+            this.stop.Name = "stop";
+            this.stop.Size = new System.Drawing.Size(75, 23);
+            this.stop.TabIndex = 5;
+            this.stop.Text = "Stop";
+            this.stop.UseVisualStyleBackColor = true;
+            this.stop.Click += new System.EventHandler(this.stop_Click);
+            // 
             // filelabel
             // 
             this.filelabel.AutoSize = true;
@@ -390,15 +428,129 @@
             this.statusProgress.Name = "statusProgress";
             this.statusProgress.Size = new System.Drawing.Size(100, 16);
             // 
-            // stop
+            // groupBox7
             // 
-            this.stop.Location = new System.Drawing.Point(246, 224);
-            this.stop.Name = "stop";
-            this.stop.Size = new System.Drawing.Size(75, 23);
-            this.stop.TabIndex = 5;
-            this.stop.Text = "Stop";
-            this.stop.UseVisualStyleBackColor = true;
-            this.stop.Click += new System.EventHandler(this.stop_Click);
+            this.groupBox7.Controls.Add(this.sNum);
+            this.groupBox7.Controls.Add(this.label6);
+            this.groupBox7.Controls.Add(this.hNum);
+            this.groupBox7.Controls.Add(this.label5);
+            this.groupBox7.Controls.Add(this.wNum);
+            this.groupBox7.Controls.Add(this.label4);
+            this.groupBox7.Controls.Add(this.yNum);
+            this.groupBox7.Controls.Add(this.label3);
+            this.groupBox7.Controls.Add(this.xNum);
+            this.groupBox7.Controls.Add(this.label2);
+            this.groupBox7.Location = new System.Drawing.Point(364, 61);
+            this.groupBox7.Name = "groupBox7";
+            this.groupBox7.Size = new System.Drawing.Size(119, 159);
+            this.groupBox7.TabIndex = 6;
+            this.groupBox7.TabStop = false;
+            this.groupBox7.Text = "Sprite Data";
+            // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.Location = new System.Drawing.Point(4, 20);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(14, 13);
+            this.label2.TabIndex = 0;
+            this.label2.Text = "X";
+            // 
+            // xNum
+            // 
+            this.xNum.Location = new System.Drawing.Point(45, 18);
+            this.xNum.Maximum = new decimal(new int[] {
+            65536,
+            0,
+            0,
+            0});
+            this.xNum.Name = "xNum";
+            this.xNum.Size = new System.Drawing.Size(68, 20);
+            this.xNum.TabIndex = 1;
+            // 
+            // yNum
+            // 
+            this.yNum.Location = new System.Drawing.Point(45, 44);
+            this.yNum.Maximum = new decimal(new int[] {
+            65536,
+            0,
+            0,
+            0});
+            this.yNum.Name = "yNum";
+            this.yNum.Size = new System.Drawing.Size(68, 20);
+            this.yNum.TabIndex = 3;
+            // 
+            // label3
+            // 
+            this.label3.AutoSize = true;
+            this.label3.Location = new System.Drawing.Point(4, 46);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(14, 13);
+            this.label3.TabIndex = 2;
+            this.label3.Text = "Y";
+            // 
+            // wNum
+            // 
+            this.wNum.Location = new System.Drawing.Point(45, 70);
+            this.wNum.Maximum = new decimal(new int[] {
+            65536,
+            0,
+            0,
+            0});
+            this.wNum.Name = "wNum";
+            this.wNum.Size = new System.Drawing.Size(68, 20);
+            this.wNum.TabIndex = 5;
+            // 
+            // label4
+            // 
+            this.label4.AutoSize = true;
+            this.label4.Location = new System.Drawing.Point(4, 72);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(35, 13);
+            this.label4.TabIndex = 4;
+            this.label4.Text = "Width";
+            // 
+            // hNum
+            // 
+            this.hNum.Location = new System.Drawing.Point(45, 96);
+            this.hNum.Maximum = new decimal(new int[] {
+            65536,
+            0,
+            0,
+            0});
+            this.hNum.Name = "hNum";
+            this.hNum.Size = new System.Drawing.Size(68, 20);
+            this.hNum.TabIndex = 7;
+            // 
+            // label5
+            // 
+            this.label5.AutoSize = true;
+            this.label5.Location = new System.Drawing.Point(4, 98);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(38, 13);
+            this.label5.TabIndex = 6;
+            this.label5.Text = "Height";
+            // 
+            // sNum
+            // 
+            this.sNum.Location = new System.Drawing.Point(45, 122);
+            this.sNum.Maximum = new decimal(new int[] {
+            65536,
+            0,
+            0,
+            0});
+            this.sNum.Name = "sNum";
+            this.sNum.Size = new System.Drawing.Size(68, 20);
+            this.sNum.TabIndex = 9;
+            // 
+            // label6
+            // 
+            this.label6.AutoSize = true;
+            this.label6.Location = new System.Drawing.Point(4, 124);
+            this.label6.Name = "label6";
+            this.label6.Size = new System.Drawing.Size(35, 13);
+            this.label6.TabIndex = 8;
+            this.label6.Text = "Sheet";
             // 
             // textureDisplay
             // 
@@ -419,16 +571,6 @@
             this.spriteDisplay.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
             this.spriteDisplay.TabIndex = 5;
             this.spriteDisplay.TabStop = false;
-            // 
-            // loop
-            // 
-            this.loop.AutoSize = true;
-            this.loop.Location = new System.Drawing.Point(109, 228);
-            this.loop.Name = "loop";
-            this.loop.Size = new System.Drawing.Size(50, 17);
-            this.loop.TabIndex = 6;
-            this.loop.Text = "Loop";
-            this.loop.UseVisualStyleBackColor = true;
             // 
             // Form1
             // 
@@ -466,6 +608,13 @@
             this.audioContextStrip.ResumeLayout(false);
             this.statusStrip1.ResumeLayout(false);
             this.statusStrip1.PerformLayout();
+            this.groupBox7.ResumeLayout(false);
+            this.groupBox7.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.xNum)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.yNum)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.wNum)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.hNum)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.sNum)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.textureDisplay)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.spriteDisplay)).EndInit();
             this.ResumeLayout(false);
@@ -512,6 +661,17 @@
         private PictureBoxNearestNeighbor textureDisplay;
         private System.Windows.Forms.Button stop;
         private System.Windows.Forms.CheckBox loop;
+        private System.Windows.Forms.GroupBox groupBox7;
+        private System.Windows.Forms.NumericUpDown xNum;
+        private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.NumericUpDown yNum;
+        private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.NumericUpDown sNum;
+        private System.Windows.Forms.Label label6;
+        private System.Windows.Forms.NumericUpDown hNum;
+        private System.Windows.Forms.Label label5;
+        private System.Windows.Forms.NumericUpDown wNum;
+        private System.Windows.Forms.Label label4;
     }
 }
 
