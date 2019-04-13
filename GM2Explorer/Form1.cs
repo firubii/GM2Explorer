@@ -102,16 +102,16 @@ namespace GM2Explorer
             this.Enabled = false;
             this.Cursor = Cursors.WaitCursor;
             BinaryReader reader;
-            byte[] file = { };
+            string file = "";
             if (!path.EndsWith(".exe"))
             {
                 if (File.Exists(path + "\\data.win"))
                 {
-                    file = File.ReadAllBytes(path + "\\data.win");
+                    file = path + "\\data.win";
                 }
                 else if (File.Exists(path + "\\game.win"))
                 {
-                    file = File.ReadAllBytes(path + "\\game.win");
+                    file = path + "\\game.win";
                 }
             }
             else
@@ -128,27 +128,34 @@ namespace GM2Explorer
                         reader.BaseStream.Seek(pos + 4, SeekOrigin.Begin);
                         uint fileLength = reader.ReadUInt32() + 8;
                         reader.BaseStream.Seek(pos, SeekOrigin.Current);
-                        file = reader.ReadBytes((int)fileLength);
+                        if (Directory.Exists(@"C:\gmetemp"))
+                        {
+                            Directory.Delete(@"C:\gmetemp", true);
+                        }
+                        Directory.CreateDirectory(@"C:\gmetemp");
+                        File.WriteAllBytes(@"C:\gmetemp\tmp.win", reader.ReadBytes((int)fileLength));
+                        file = @"C:\gmetemp\tmp.win";
                         break;
                     }
                 }
             }
-            reader = new BinaryReader(new MemoryStream(file));
+            reader = new BinaryReader(new FileStream(file, FileMode.Open));
             int texOffset = 0x8;
             reader.BaseStream.Seek(0x3C, SeekOrigin.Begin);
             uint version = reader.ReadUInt32();
             reader.BaseStream.Seek(0x14, SeekOrigin.Begin);
             uint projnameoffset = reader.ReadUInt32();
             reader.BaseStream.Seek(projnameoffset - 4, SeekOrigin.Begin);
-            uint projnamelength = reader.ReadUInt32();
-            string projname = string.Join("", reader.ReadChars((int)projnamelength));
+            string projname = Encoding.UTF8.GetString(reader.ReadBytes(reader.ReadInt32()));
             if (version == 1)
             {
                 texOffset = 0x4;
             }
             this.Text = "GM2Explorer - Reading game " + projname;
-            
+
+            this.Enabled = true;
             status.Text = "Finding next Section...";
+            this.Enabled = false;
             //Begin asset search
             reader.BaseStream.Seek(0, SeekOrigin.Begin);
             //Start at FORM
@@ -175,7 +182,9 @@ namespace GM2Explorer
             uint sondOffs = (uint)reader.BaseStream.Position;
             reader.BaseStream.Seek(sectLen, SeekOrigin.Current);
             //AGRP
+            this.Enabled = true;
             status.Text = "Reading AGRP Section...";
+            this.Enabled = false;
             reader.BaseStream.Seek(4, SeekOrigin.Current);
             sectLen = reader.ReadUInt32();
             uint currentOffset = (uint)reader.BaseStream.Position;
@@ -191,26 +200,31 @@ namespace GM2Explorer
             }
             for (int i = 0; i < entryCount; i++)
             {
-                try
-                {
-                    AudioGroup _audo = new AudioGroup();
-                    _audo.fileNames = new List<string>();
-                    _audo.files = new List<byte[]>();
-                    reader.BaseStream.Seek(entryOffsets[i], SeekOrigin.Begin);
-                    uint nameOffset = reader.ReadUInt32();
-                    reader.BaseStream.Seek(nameOffset - 4, SeekOrigin.Begin);
-                    uint nameLength = reader.ReadUInt32();
-                    string groupName = string.Join("", reader.ReadChars((int)nameLength));
-                    _audo.name = groupName;
-                    AudioGroupList.Add(_audo);
-                }
-                catch { }
+                AudioGroup _audo = new AudioGroup();
+                _audo.fileNames = new List<string>();
+                _audo.files = new List<byte[]>();
+                reader.BaseStream.Seek(entryOffsets[i], SeekOrigin.Begin);
+                uint nameOffset = reader.ReadUInt32();
+                reader.BaseStream.Seek(nameOffset - 4, SeekOrigin.Begin);
+                string groupName = Encoding.UTF8.GetString(reader.ReadBytes(reader.ReadInt32()));
+                _audo.name = groupName;
+                AudioGroupList.Add(_audo);
                 statusProgress.Value++;
+            }
+            if (entryCount == 0)
+            {
+                AudioGroup _audo = new AudioGroup();
+                _audo.fileNames = new List<string>();
+                _audo.files = new List<byte[]>();
+                _audo.name = "audiogroup_default";
+                AudioGroupList.Add(_audo);
             }
 
             //Jump back to SOND and fill out the data
             reader.BaseStream.Seek(sondOffs, SeekOrigin.Begin);
+            this.Enabled = true;
             status.Text = "Reading SOND Section...";
+            this.Enabled = false;
             entryCount = reader.ReadUInt32();
             entryListStart = (uint)reader.BaseStream.Position;
             entryOffsets = new List<uint>();
@@ -234,7 +248,7 @@ namespace GM2Explorer
                 if (audioIndex != -1)
                 {
                     AudioGroup _audo = AudioGroupList[groupIndex];
-                    if (_audo.fileNames.Count < audioIndex)
+                    if (_audo.fileNames.Count < audioIndex + 1)
                     {
                         _audo.fileNames.AddRange(new string[(audioIndex + 1) - _audo.fileNames.Count]);
                     }
@@ -247,7 +261,9 @@ namespace GM2Explorer
             reader.BaseStream.Seek(currentOffset, SeekOrigin.Begin);
             reader.BaseStream.Seek(sectLen, SeekOrigin.Current);
             //SPRT
+            this.Enabled = true;
             status.Text = "Reading SPRT Section...";
+            this.Enabled = false;
             reader.BaseStream.Seek(4, SeekOrigin.Current);
             sectLen = reader.ReadUInt32();
             currentOffset = (uint)reader.BaseStream.Position;
@@ -284,31 +300,25 @@ namespace GM2Explorer
                 }
                 for (int t = 0; t < texCount; t++)
                 {
-                    try
-                    {
-                        reader.BaseStream.Seek(texOffsets[t], SeekOrigin.Begin);
-                        sprt.x.Add(reader.ReadUInt16());
-                        sprt.y.Add(reader.ReadUInt16());
-                        sprt.width.Add(reader.ReadUInt16());
-                        sprt.height.Add(reader.ReadUInt16());
-                        reader.BaseStream.Seek(0xC, SeekOrigin.Current);
-                        sprt.sheet.Add(reader.ReadUInt16());
-                    }
-                    catch
-                    {
-                        Console.WriteLine("Something happened!!\ntex:" + t + "\nCurrent position: 0x" + reader.BaseStream.Position.ToString("X8"));
-                    }
+                    reader.BaseStream.Seek(texOffsets[t], SeekOrigin.Begin);
+                    sprt.x.Add(reader.ReadUInt16());
+                    sprt.y.Add(reader.ReadUInt16());
+                    sprt.width.Add(reader.ReadUInt16());
+                    sprt.height.Add(reader.ReadUInt16());
+                    reader.BaseStream.Seek(0xC, SeekOrigin.Current);
+                    sprt.sheet.Add(reader.ReadUInt16());
                 }
                 reader.BaseStream.Seek(nameOffset - 4, SeekOrigin.Begin);
-                uint nameLength = reader.ReadUInt32();
-                string name = string.Join("", reader.ReadChars((int)nameLength));
+                string name = Encoding.UTF8.GetString(reader.ReadBytes(reader.ReadInt32()));
                 sprt.name = name;
                 SPRTList.Add(sprt);
                 statusProgress.Value++;
             }
             reader.BaseStream.Seek(currentOffset, SeekOrigin.Begin);
             reader.BaseStream.Seek(sectLen, SeekOrigin.Current);
+            this.Enabled = true;
             status.Text = "Finding next Section...";
+            this.Enabled = false;
             //BGND
             reader.BaseStream.Seek(4, SeekOrigin.Current);
             sectLen = reader.ReadUInt32();
@@ -349,56 +359,84 @@ namespace GM2Explorer
             reader.BaseStream.Seek(4, SeekOrigin.Current);
             sectLen = reader.ReadUInt32();
             reader.BaseStream.Seek(sectLen, SeekOrigin.Current);
-            //EMBI
-            reader.BaseStream.Seek(4, SeekOrigin.Current);
-            sectLen = reader.ReadUInt32();
-            reader.BaseStream.Seek(sectLen, SeekOrigin.Current);
+            if (version == 2)
+            {
+                //EMBI
+                reader.BaseStream.Seek(4, SeekOrigin.Current);
+                sectLen = reader.ReadUInt32();
+                reader.BaseStream.Seek(sectLen, SeekOrigin.Current);
+            }
             //TPAG
             reader.BaseStream.Seek(4, SeekOrigin.Current);
             sectLen = reader.ReadUInt32();
             reader.BaseStream.Seek(sectLen, SeekOrigin.Current);
-            //TGIN
-            reader.BaseStream.Seek(4, SeekOrigin.Current);
-            sectLen = reader.ReadUInt32();
-            reader.BaseStream.Seek(sectLen, SeekOrigin.Current);
-            //CODE
-            reader.BaseStream.Seek(4, SeekOrigin.Current);
-            sectLen = reader.ReadUInt32();
-            reader.BaseStream.Seek(sectLen, SeekOrigin.Current);
-            //VARI
-            reader.BaseStream.Seek(4, SeekOrigin.Current);
-            sectLen = reader.ReadUInt32();
-            reader.BaseStream.Seek(sectLen, SeekOrigin.Current);
-            //FUNC
-            reader.BaseStream.Seek(4, SeekOrigin.Current);
-            sectLen = reader.ReadUInt32();
-            reader.BaseStream.Seek(sectLen, SeekOrigin.Current);
+            if (version == 2)
+            {
+                if (Encoding.UTF8.GetString(reader.ReadBytes(4)) == "TGIN")
+                {
+                    //TGIN
+                    sectLen = reader.ReadUInt32();
+                    reader.BaseStream.Seek(sectLen, SeekOrigin.Current);
+                }
+                else
+                {
+                    reader.BaseStream.Seek(-0x4, SeekOrigin.Current);
+                }
+            }
+            //Sometimes these just aren't there for some reason
+            if (Encoding.UTF8.GetString(reader.ReadBytes(4)) == "CODE")
+            {
+                //CODE
+                sectLen = reader.ReadUInt32();
+                reader.BaseStream.Seek(sectLen, SeekOrigin.Current);
+                //VARI
+                reader.BaseStream.Seek(4, SeekOrigin.Current);
+                sectLen = reader.ReadUInt32();
+                reader.BaseStream.Seek(sectLen, SeekOrigin.Current);
+                //FUNC
+                reader.BaseStream.Seek(4, SeekOrigin.Current);
+                sectLen = reader.ReadUInt32();
+                reader.BaseStream.Seek(sectLen, SeekOrigin.Current);
+            }
+            else
+            {
+                reader.BaseStream.Seek(-0x4, SeekOrigin.Current);
+            }
             //STRG
             reader.BaseStream.Seek(4, SeekOrigin.Current);
             sectLen = reader.ReadUInt32();
             currentOffset = (uint)reader.BaseStream.Position;
 
-            status.Text = "Reading STRG Section...";
-            uint stringCount = reader.ReadUInt32();
-            statusProgress.Value = 0;
-            statusProgress.Maximum = (int)stringCount;
-            for (int i = 0; i < stringCount; i++)
+            if (MessageBox.Show("Do you want to load the STRG (strings) section?\nNote: This will take a lot longer and will take up a lot more RAM", "GM2Explorer", MessageBoxButtons.YesNo) == DialogResult.Yes)
             {
-                uint pos = (uint)reader.BaseStream.Position;
-                reader.BaseStream.Seek(reader.ReadUInt32(), SeekOrigin.Begin);
-                STRGList.Add(Encoding.UTF8.GetString(reader.ReadBytes(reader.ReadInt32())));
-                reader.BaseStream.Seek(pos + 4, SeekOrigin.Begin);
-                statusProgress.Value++;
+                this.Enabled = true;
+                status.Text = "Reading STRG Section...";
+                this.Enabled = false;
+                uint stringCount = reader.ReadUInt32();
+                statusProgress.Value = 0;
+                statusProgress.Maximum = (int)stringCount;
+                for (int i = 0; i < stringCount; i++)
+                {
+                    uint pos = (uint)reader.BaseStream.Position;
+                    reader.BaseStream.Seek(reader.ReadUInt32(), SeekOrigin.Begin);
+                    //Console.WriteLine($"{i}: 0x{pos.ToString("X8")} >> 0x{reader.BaseStream.Position.ToString("X8")}");
+                    STRGList.Add(Encoding.UTF8.GetString(reader.ReadBytes(reader.ReadInt32())));
+                    reader.BaseStream.Seek(pos + 4, SeekOrigin.Begin);
+                    statusProgress.Value++;
+                }
             }
 
             reader.BaseStream.Seek(currentOffset, SeekOrigin.Begin);
             reader.BaseStream.Seek(sectLen, SeekOrigin.Current);
             //TXTR
+            this.Enabled = true;
             status.Text = "Reading TXTR Section...";
+            this.Enabled = false;
             reader.BaseStream.Seek(4, SeekOrigin.Current);
             sectLen = reader.ReadUInt32();
             currentOffset = (uint)reader.BaseStream.Position;
 
+            uint sectionEndOffset = currentOffset + sectLen;
             uint fileCount = reader.ReadUInt32();
             uint fileListStart = (uint)reader.BaseStream.Position;
             statusProgress.Value = 0;
@@ -413,37 +451,34 @@ namespace GM2Explorer
             }
             for (int f = 0; f < fileOffsets.Count; f++)
             {
-                statusProgress.Value++;
-                //Console.WriteLine("Reading texture " + f + " at offset 0x" + fileOffsets[f].ToString("X8"));
-                List<byte> tex = new List<byte>();
                 reader.BaseStream.Seek(fileOffsets[f], SeekOrigin.Begin);
-                while (reader.BaseStream.Position < reader.BaseStream.Length)
+                byte[] tex = new byte[] { };
+                if (f == fileOffsets.Count - 1)
                 {
-                    tex.Add(reader.ReadByte());
-                    if (tex[tex.Count - 1] == 0x82)
-                    {
-                        if (tex[tex.Count - 4] == 0xAE && tex[tex.Count - 3] == 0x42 && tex[tex.Count - 2] == 0x60)
-                        {
-                            break;
-                        }
-                    }
+                    tex = reader.ReadBytes((int)(sectionEndOffset - fileOffsets[f]));
+                }
+                else
+                {
+                    tex = reader.ReadBytes((int)(fileOffsets[f + 1] - fileOffsets[f]));
                 }
                 try
                 {
-                    MemoryStream stream = new MemoryStream(tex.ToArray());
+                    MemoryStream stream = new MemoryStream(tex);
                     Image img = Image.FromStream(stream);
                     TXTR.Add(new Bitmap(img));
                     stream.Dispose();
                     img.Dispose();
-                    tex.Clear();
                 }
                 catch { }
+                statusProgress.Value++;
             }
             fileOffsets.Clear();
             reader.BaseStream.Seek(currentOffset, SeekOrigin.Begin);
             reader.BaseStream.Seek(sectLen, SeekOrigin.Current);
             //AUDO
+            this.Enabled = true;
             status.Text = "Reading AUDO Section...";
+            this.Enabled = false;
             reader.BaseStream.Seek(4, SeekOrigin.Current);
             sectLen = reader.ReadUInt32();
 
@@ -474,8 +509,9 @@ namespace GM2Explorer
             fileOffsets.Clear();
             reader.Dispose();
 
-
+            this.Enabled = true;
             status.Text = "Reading AudioGroups...";
+            this.Enabled = true;
             if (path.EndsWith(".exe"))
             {
                 path = path.Replace("\\" + path.Split('\\').Last(), "");
@@ -555,7 +591,7 @@ namespace GM2Explorer
             audioList.EndUpdate();
             stringList.EndUpdate();
 
-            file = new byte[] { };
+            file = "";
             reader.Dispose();
             sNum.Maximum = TXTR.Count - 1;
             this.Text = "GM2Explorer";
@@ -565,6 +601,11 @@ namespace GM2Explorer
             audioList.EndUpdate();
             texList.EndUpdate();
             spriteList.EndUpdate();
+
+            if (Directory.Exists(@"C:\gmetemp"))
+            {
+                Directory.Delete(@"C:\gmetemp", true);
+            }
         }
 
         private void openToolStripMenuItem_Click(object sender, EventArgs e)
