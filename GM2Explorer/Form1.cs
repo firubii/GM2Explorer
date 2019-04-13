@@ -80,6 +80,9 @@ namespace GM2Explorer
 
         public void ReadData(string path)
         {
+            ProgressWindow progress = new ProgressWindow();
+            progress.Show();
+
             if (wavOutput != null) wavOutput.Dispose();
             if (wavFile != null) wavFile.Dispose();
             if (vorbisFile != null) vorbisFile.Dispose();
@@ -98,7 +101,6 @@ namespace GM2Explorer
             SPRTList.Clear();
             STRGList.Clear();
             stringList.Items.Clear();
-            statusProgress.Value = 0;
             this.Enabled = false;
             this.Cursor = Cursors.WaitCursor;
             BinaryReader reader;
@@ -116,6 +118,7 @@ namespace GM2Explorer
             }
             else
             {
+                progress.SetText("Searching for data.win...");
                 reader = new BinaryReader(new FileStream(path, FileMode.Open));
                 while (reader.BaseStream.Position < reader.BaseStream.Length)
                 {
@@ -152,10 +155,8 @@ namespace GM2Explorer
                 texOffset = 0x4;
             }
             this.Text = "GM2Explorer - Reading game " + projname;
-
-            this.Enabled = true;
-            status.Text = "Finding next Section...";
-            this.Enabled = false;
+            
+            progress.SetText("Finding next section...");
             //Begin asset search
             reader.BaseStream.Seek(0, SeekOrigin.Begin);
             //Start at FORM
@@ -200,9 +201,7 @@ namespace GM2Explorer
             uint sondOffs = (uint)reader.BaseStream.Position;
             reader.BaseStream.Seek(sectLen, SeekOrigin.Current);
             //AGRP
-            this.Enabled = true;
-            status.Text = "Reading AGRP Section...";
-            this.Enabled = false;
+            progress.SetText("Reading AGRP Section...");
             reader.BaseStream.Seek(4, SeekOrigin.Current);
             sectLen = reader.ReadUInt32();
             uint currentOffset = (uint)reader.BaseStream.Position;
@@ -210,14 +209,16 @@ namespace GM2Explorer
             uint entryCount = reader.ReadUInt32();
             uint entryListStart = (uint)reader.BaseStream.Position;
             List<uint> entryOffsets = new List<uint>();
-            statusProgress.Value = 0;
-            statusProgress.Maximum = (int)entryCount;
+            progress.SetProgressValue(0);
+            progress.SetProgressMax((int)entryCount);
             for (int i = 0; i < entryCount; i++)
             {
                 entryOffsets.Add(reader.ReadUInt32());
             }
             for (int i = 0; i < entryCount; i++)
             {
+                progress.SetProgressValue(i);
+                progress.SetText($"Reading AGRP Section... {i}/{entryCount} - {(int)(((float)i/(float)entryCount)*100)}");
                 AudioGroup _audo = new AudioGroup();
                 _audo.fileNames = new List<string>();
                 _audo.files = new List<byte[]>();
@@ -227,7 +228,6 @@ namespace GM2Explorer
                 string groupName = Encoding.UTF8.GetString(reader.ReadBytes(reader.ReadInt32()));
                 _audo.name = groupName;
                 AudioGroupList.Add(_audo);
-                statusProgress.Value++;
             }
             if (entryCount == 0)
             {
@@ -240,21 +240,21 @@ namespace GM2Explorer
 
             //Jump back to SOND and fill out the data
             reader.BaseStream.Seek(sondOffs, SeekOrigin.Begin);
-            this.Enabled = true;
-            status.Text = "Reading SOND Section...";
-            this.Enabled = false;
+            progress.SetText("Reading SOND Section...");
             entryCount = reader.ReadUInt32();
             entryListStart = (uint)reader.BaseStream.Position;
             entryOffsets = new List<uint>();
 
-            statusProgress.Value = 0;
-            statusProgress.Maximum = (int)entryCount;
+            progress.SetProgressValue(0);
+            progress.SetProgressMax((int)entryCount);
             for (int i = 0; i < entryCount; i++)
             {
                 entryOffsets.Add(reader.ReadUInt32());
             }
             for (int i = 0; i < entryCount; i++)
             {
+                progress.SetProgressValue(i);
+                progress.SetText($"Reading SOND Section... {i}/{entryCount} - {(int)(((float)i / (float)entryCount) * 100)}");
                 reader.BaseStream.Seek(entryOffsets[i], SeekOrigin.Begin);
                 uint nameOffset = reader.ReadUInt32();
                 long pos = reader.BaseStream.Position;
@@ -273,22 +273,19 @@ namespace GM2Explorer
                     _audo.fileNames[audioIndex] = audioName;
                     AudioGroupList[groupIndex] = _audo;
                 }
-                statusProgress.Value++;
             }
 
             reader.BaseStream.Seek(currentOffset, SeekOrigin.Begin);
             reader.BaseStream.Seek(sectLen, SeekOrigin.Current);
             //SPRT
-            this.Enabled = true;
-            status.Text = "Reading SPRT Section...";
-            this.Enabled = false;
+            progress.SetText("Reading SPRT Section...");
             reader.BaseStream.Seek(4, SeekOrigin.Current);
             sectLen = reader.ReadUInt32();
             currentOffset = (uint)reader.BaseStream.Position;
             
             uint spriteCount = reader.ReadUInt32();
-            statusProgress.Value = 0;
-            statusProgress.Maximum = (int)spriteCount;
+            progress.SetProgressValue(0);
+            progress.SetProgressMax((int)spriteCount);
             List<uint> spriteOffsets = new List<uint>();
             for (int i = 0; i < spriteCount; i++)
             {
@@ -296,6 +293,8 @@ namespace GM2Explorer
             }
             for (int i = 0; i < spriteCount; i++)
             {
+                progress.SetProgressValue(i);
+                progress.SetText($"Reading SPRT section... {i}/{spriteCount} - {(int)(((float)i / (float)spriteCount) * 100)}");
                 SPRT sprt = new SPRT();
                 sprt.x = new List<ushort>();
                 sprt.y = new List<ushort>();
@@ -330,13 +329,10 @@ namespace GM2Explorer
                 string name = Encoding.UTF8.GetString(reader.ReadBytes(reader.ReadInt32()));
                 sprt.name = name;
                 SPRTList.Add(sprt);
-                statusProgress.Value++;
             }
             reader.BaseStream.Seek(currentOffset, SeekOrigin.Begin);
             reader.BaseStream.Seek(sectLen, SeekOrigin.Current);
-            this.Enabled = true;
-            status.Text = "Finding next Section...";
-            this.Enabled = false;
+            progress.SetText("Finding next Section...");
             //BGND
             if (Encoding.UTF8.GetString(reader.ReadBytes(4)) == "BGND")
             {
@@ -504,29 +500,26 @@ namespace GM2Explorer
 
             if (MessageBox.Show("Do you want to load the STRG (strings) section?\nNote: This will take a lot longer and will take up a lot more RAM", "GM2Explorer", MessageBoxButtons.YesNo) == DialogResult.Yes)
             {
-                this.Enabled = true;
-                status.Text = "Reading STRG Section...";
-                this.Enabled = false;
+                progress.SetText("Reading STRG Section...");
                 uint stringCount = reader.ReadUInt32();
-                statusProgress.Value = 0;
-                statusProgress.Maximum = (int)stringCount;
+                progress.SetProgressValue(0);
+                progress.SetProgressMax((int)stringCount);
                 for (int i = 0; i < stringCount; i++)
                 {
+                    progress.SetProgressValue(i);
+                    progress.SetText($"Reading STRG section... {i}/{stringCount} - {(int)(((float)i / (float)stringCount) * 100)}");
                     uint pos = (uint)reader.BaseStream.Position;
                     reader.BaseStream.Seek(reader.ReadUInt32(), SeekOrigin.Begin);
                     //Console.WriteLine($"{i}: 0x{pos.ToString("X8")} >> 0x{reader.BaseStream.Position.ToString("X8")}");
                     STRGList.Add(Encoding.UTF8.GetString(reader.ReadBytes(reader.ReadInt32())));
                     reader.BaseStream.Seek(pos + 4, SeekOrigin.Begin);
-                    statusProgress.Value++;
                 }
             }
 
             reader.BaseStream.Seek(currentOffset, SeekOrigin.Begin);
             reader.BaseStream.Seek(sectLen, SeekOrigin.Current);
             //TXTR
-            this.Enabled = true;
-            status.Text = "Reading TXTR Section...";
-            this.Enabled = false;
+            progress.SetText("Reading TXTR Section...");
             reader.BaseStream.Seek(4, SeekOrigin.Current);
             sectLen = reader.ReadUInt32();
             currentOffset = (uint)reader.BaseStream.Position;
@@ -534,8 +527,8 @@ namespace GM2Explorer
             uint sectionEndOffset = currentOffset + sectLen;
             uint fileCount = reader.ReadUInt32();
             uint fileListStart = (uint)reader.BaseStream.Position;
-            statusProgress.Value = 0;
-            statusProgress.Maximum = (int)fileCount;
+            progress.SetProgressValue(0);
+            progress.SetProgressMax((int)fileCount);
             List<uint> fileOffsets = new List<uint>();
             for (int f = 0; f < fileCount; f++)
             {
@@ -546,6 +539,8 @@ namespace GM2Explorer
             }
             for (int f = 0; f < fileOffsets.Count; f++)
             {
+                progress.SetProgressValue(f);
+                progress.SetText($"Reading TXTR section... {f}/{fileCount} - {(int)(((float)f / (float)fileCount) * 100)}");
                 reader.BaseStream.Seek(fileOffsets[f], SeekOrigin.Begin);
                 byte[] tex = new byte[] { };
                 if (f == fileOffsets.Count - 1)
@@ -565,15 +560,12 @@ namespace GM2Explorer
                     img.Dispose();
                 }
                 catch { }
-                statusProgress.Value++;
             }
             fileOffsets.Clear();
             reader.BaseStream.Seek(currentOffset, SeekOrigin.Begin);
             reader.BaseStream.Seek(sectLen, SeekOrigin.Current);
             //AUDO
-            this.Enabled = true;
-            status.Text = "Reading AUDO Section...";
-            this.Enabled = false;
+            progress.SetText("Reading AUDO Section...");
             reader.BaseStream.Seek(4, SeekOrigin.Current);
             sectLen = reader.ReadUInt32();
 
@@ -581,8 +573,8 @@ namespace GM2Explorer
             //Console.WriteLine("Found AUDO Section at 0x" + currentOffset.ToString("X8"));
             fileCount = reader.ReadUInt32();
             fileListStart = (uint)reader.BaseStream.Position;
-            statusProgress.Value = 0;
-            statusProgress.Maximum = (int)fileCount;
+            progress.SetProgressValue(0);
+            progress.SetProgressMax((int)fileCount);
             fileOffsets = new List<uint>();
             for (int f = 0; f < fileCount; f++)
             {
@@ -591,8 +583,9 @@ namespace GM2Explorer
             }
             for (int f = 0; f < fileOffsets.Count; f++)
             {
+                progress.SetProgressValue(f);
+                progress.SetText($"Reading TXTR section... {f}/{fileCount} - {(int)(((float)f / (float)fileCount) * 100)}");
                 reader.BaseStream.Seek(fileOffsets[f], SeekOrigin.Begin);
-                statusProgress.Value++;
                 //Console.WriteLine("Reading audio " + f + " at offset 0x" + fileOffsets[f].ToString("X8"));
                 List<byte> audio = new List<byte>();
                 uint fileLength = reader.ReadUInt32();
@@ -604,16 +597,19 @@ namespace GM2Explorer
             fileOffsets.Clear();
             reader.Dispose();
 
-            this.Enabled = true;
-            status.Text = "Reading AudioGroups...";
-            this.Enabled = true;
+            progress.SetProgressValue(0);
+            progress.SetText("Reading AudioGroups...");
             if (path.EndsWith(".exe"))
             {
                 path = path.Replace("\\" + path.Split('\\').Last(), "");
             }
             string[] audiogroups = Directory.GetFiles(path, "audiogroup*.dat");
+            progress.SetProgressMax(audiogroups.Length);
             for (int i = 0; i < audiogroups.Length; i++)
             {
+                progress.SetProgressValue(i);
+                progress.SetText($"Reading TXTR section... {i}/{audiogroups.Length} - {(int)(((float)i / (float)audiogroups.Length) * 100)}");
+
                 this.Text = "GM2Explorer - Reading \"" + path + "\\" + audiogroups[i].Replace(path + "\\", "") + "\"";
                 reader = new BinaryReader(new FileStream(audiogroups[i], FileMode.Open));
                 reader.BaseStream.Seek(0x10, SeekOrigin.Begin);
@@ -623,8 +619,6 @@ namespace GM2Explorer
                 //Console.WriteLine("Found AUDO Section at 0x" + currentOffset.ToString("X8"));
                 fileCount = reader.ReadUInt32();
                 fileListStart = (uint)reader.BaseStream.Position;
-                statusProgress.Value = 0;
-                statusProgress.Maximum = (int)fileCount;
                 fileOffsets = new List<uint>();
                 for (int f = 0; f < fileCount; f++)
                 {
@@ -634,7 +628,6 @@ namespace GM2Explorer
                 for (int f = 0; f < fileOffsets.Count; f++)
                 {
                     reader.BaseStream.Seek(fileOffsets[f], SeekOrigin.Begin);
-                    statusProgress.Value++;
                     //Console.WriteLine("Reading audio " + f + " at offset 0x" + fileOffsets[f].ToString("X8"));
                     List<byte> audio = new List<byte>();
                     uint fileLength = reader.ReadUInt32();
@@ -645,8 +638,6 @@ namespace GM2Explorer
                 AudioGroupList[i + 1] = audo;
             }
             reader.Dispose();
-
-            status.Text = "Done";
 
             texList.BeginUpdate();
             spriteList.BeginUpdate();
@@ -701,6 +692,8 @@ namespace GM2Explorer
             {
                 Directory.Delete(@"C:\gmetemp", true);
             }
+
+            progress.Close();
         }
 
         private void openToolStripMenuItem_Click(object sender, EventArgs e)
@@ -756,11 +749,8 @@ namespace GM2Explorer
             save.FileName = "Select a Folder";
             if (save.ShowDialog() == DialogResult.OK)
             {
-                statusProgress.Value = 0;
-                statusProgress.Maximum = TXTR.Count;
                 for (int i = 0; i < TXTR.Count; i++)
                 {
-                    statusProgress.Value = i + 1;
                     TXTR[i].Save(Path.GetDirectoryName(save.FileName) + "\\tex_" + i + ".png", System.Drawing.Imaging.ImageFormat.Png);
                 }
             }
@@ -884,8 +874,11 @@ namespace GM2Explorer
             save.CheckFileExists = false;
             save.CheckPathExists = true;
             save.FileName = "Select a Folder";
+            save.Title = "Select a Folder";
             if (save.ShowDialog() == DialogResult.OK)
             {
+                ProgressWindow progress = new ProgressWindow();
+                progress.Show();
                 for (int i = 0; i < AudioGroupList.Count; i++)
                 {
                     string dir = Path.GetDirectoryName(save.FileName) + "\\" + AudioGroupList[i].name;
@@ -894,11 +887,12 @@ namespace GM2Explorer
                         Directory.Delete(dir, true);
                     }
                     Directory.CreateDirectory(dir);
-                    statusProgress.Value = 0;
-                    statusProgress.Maximum = AudioGroupList[i].files.Count;
+                    progress.SetText($"Saving AudioGroup {AudioGroupList[i].name}...");
+                    progress.SetProgressMax(AudioGroupList[i].files.Count);
                     for (int f = 0; f < AudioGroupList[i].files.Count; f++)
                     {
-                        statusProgress.Value++;
+                        progress.SetProgressValue(f);
+                        progress.SetText($"Saving AudioGroup {AudioGroupList[i].name}... {f}/{AudioGroupList[i].files.Count} - {(int)(((float)f/(float)AudioGroupList[i].files.Count)*100)}%");
                         string extension = "";
                         if (BitConverter.ToUInt32(AudioGroupList[i].files[f], 0) == 0x5367674F)
                         {
@@ -918,6 +912,7 @@ namespace GM2Explorer
                         }
                     }
                 }
+                progress.Close();
             }
         }
 
@@ -927,13 +922,10 @@ namespace GM2Explorer
             try
             {
                 Bitmap image = Crop(TXTR[sprt.sheet[0]], new Rectangle((int)sprt.x[0], (int)sprt.y[0], (int)sprt.width[0], (int)sprt.height[0]));
-                
                 spriteDisplay.Image = image;
                 spriteNum.Value = 0;
                 spriteNum.Maximum = SPRTList[spriteList.SelectedIndex].sheet.Count - 1;
                 spriteCount.Text = "/" + spriteNum.Maximum;
-
-                
             }
             catch
             {
@@ -989,12 +981,16 @@ namespace GM2Explorer
             save.CheckFileExists = false;
             save.CheckPathExists = true;
             save.FileName = "Select a Folder";
+            save.Title = "Select a Folder";
             if (save.ShowDialog() == DialogResult.OK)
             {
-                statusProgress.Value = 0;
-                statusProgress.Maximum = SPRTList.Count;
+                ProgressWindow progress = new ProgressWindow();
+                progress.Show();
+                progress.SetProgressMax(SPRTList.Count);
                 for (int i = 0; i < SPRTList.Count; i++)
                 {
+                    progress.SetProgressValue(i);
+                    progress.SetText($"Saving Sprites... {i}/{SPRTList.Count} - {(int)(((float)i / (float)SPRTList.Count) * 100)}%");
                     SPRT sprt = SPRTList[i];
                     if (SPRTList[i].sheet.Count > 1)
                     {
@@ -1011,8 +1007,8 @@ namespace GM2Explorer
                         }
                         catch { }
                     }
-                    statusProgress.Value = i + 1;
                 }
+                progress.Close();
             }
         }
 

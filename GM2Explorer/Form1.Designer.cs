@@ -35,6 +35,7 @@
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.TXTRtab = new System.Windows.Forms.TabPage();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.textureDisplay = new GM2Explorer.PictureBoxNearestNeighbor();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.texList = new System.Windows.Forms.ListBox();
             this.textureContextStrip = new System.Windows.Forms.ContextMenuStrip(this.components);
@@ -53,6 +54,7 @@
             this.label3 = new System.Windows.Forms.Label();
             this.xNum = new System.Windows.Forms.NumericUpDown();
             this.label2 = new System.Windows.Forms.Label();
+            this.spriteDisplay = new GM2Explorer.PictureBoxNearestNeighbor();
             this.spriteCount = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
             this.spriteNum = new System.Windows.Forms.NumericUpDown();
@@ -73,19 +75,15 @@
             this.audioContextStrip = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.exportAudioToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.exportAllAudioToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.statusStrip1 = new System.Windows.Forms.StatusStrip();
-            this.statusProgress = new System.Windows.Forms.ToolStripProgressBar();
             this.STRGtab = new System.Windows.Forms.TabPage();
             this.stringList = new System.Windows.Forms.ListBox();
             this.stringListStrip = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.exportAllStringsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.status = new System.Windows.Forms.ToolStripStatusLabel();
-            this.textureDisplay = new GM2Explorer.PictureBoxNearestNeighbor();
-            this.spriteDisplay = new GM2Explorer.PictureBoxNearestNeighbor();
             this.menuStrip1.SuspendLayout();
             this.tabControl1.SuspendLayout();
             this.TXTRtab.SuspendLayout();
             this.groupBox2.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.textureDisplay)).BeginInit();
             this.groupBox1.SuspendLayout();
             this.textureContextStrip.SuspendLayout();
             this.SPRTtab.SuspendLayout();
@@ -96,6 +94,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.wNum)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.yNum)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.xNum)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.spriteDisplay)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.spriteNum)).BeginInit();
             this.groupBox6.SuspendLayout();
             this.spriteMenuStrip.SuspendLayout();
@@ -104,11 +103,8 @@
             ((System.ComponentModel.ISupportInitialize)(this.trackBar1)).BeginInit();
             this.groupBox4.SuspendLayout();
             this.audioContextStrip.SuspendLayout();
-            this.statusStrip1.SuspendLayout();
             this.STRGtab.SuspendLayout();
             this.stringListStrip.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.textureDisplay)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.spriteDisplay)).BeginInit();
             this.SuspendLayout();
             // 
             // menuStrip1
@@ -170,6 +166,16 @@
             this.groupBox2.TabIndex = 2;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Preview";
+            // 
+            // textureDisplay
+            // 
+            this.textureDisplay.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(240)))), ((int)(((byte)(240)))), ((int)(((byte)(240)))));
+            this.textureDisplay.Location = new System.Drawing.Point(74, 12);
+            this.textureDisplay.Name = "textureDisplay";
+            this.textureDisplay.Size = new System.Drawing.Size(350, 350);
+            this.textureDisplay.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
+            this.textureDisplay.TabIndex = 2;
+            this.textureDisplay.TabStop = false;
             // 
             // groupBox1
             // 
@@ -363,6 +369,16 @@
             this.label2.TabIndex = 0;
             this.label2.Text = "X";
             // 
+            // spriteDisplay
+            // 
+            this.spriteDisplay.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(240)))), ((int)(((byte)(240)))), ((int)(((byte)(240)))));
+            this.spriteDisplay.Location = new System.Drawing.Point(10, 12);
+            this.spriteDisplay.Name = "spriteDisplay";
+            this.spriteDisplay.Size = new System.Drawing.Size(350, 350);
+            this.spriteDisplay.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
+            this.spriteDisplay.TabIndex = 5;
+            this.spriteDisplay.TabStop = false;
+            // 
             // spriteCount
             // 
             this.spriteCount.AutoSize = true;
@@ -545,22 +561,6 @@
             this.exportAllAudioToolStripMenuItem.Text = "Export all Audio";
             this.exportAllAudioToolStripMenuItem.Click += new System.EventHandler(this.exportAllAudioToolStripMenuItem_Click);
             // 
-            // statusStrip1
-            // 
-            this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.statusProgress,
-            this.status});
-            this.statusStrip1.Location = new System.Drawing.Point(0, 441);
-            this.statusStrip1.Name = "statusStrip1";
-            this.statusStrip1.Size = new System.Drawing.Size(800, 22);
-            this.statusStrip1.TabIndex = 2;
-            this.statusStrip1.Text = "statusStrip1";
-            // 
-            // statusProgress
-            // 
-            this.statusProgress.Name = "statusProgress";
-            this.statusProgress.Size = new System.Drawing.Size(100, 16);
-            // 
             // STRGtab
             // 
             this.STRGtab.Controls.Add(this.stringList);
@@ -586,47 +586,20 @@
             this.stringListStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.exportAllStringsToolStripMenuItem});
             this.stringListStrip.Name = "stringListStrip";
-            this.stringListStrip.Size = new System.Drawing.Size(181, 48);
+            this.stringListStrip.Size = new System.Drawing.Size(164, 26);
             // 
             // exportAllStringsToolStripMenuItem
             // 
             this.exportAllStringsToolStripMenuItem.Name = "exportAllStringsToolStripMenuItem";
-            this.exportAllStringsToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.exportAllStringsToolStripMenuItem.Size = new System.Drawing.Size(163, 22);
             this.exportAllStringsToolStripMenuItem.Text = "Export All Strings";
             this.exportAllStringsToolStripMenuItem.Click += new System.EventHandler(this.exportAllStringsToolStripMenuItem_Click);
-            // 
-            // status
-            // 
-            this.status.Name = "status";
-            this.status.Size = new System.Drawing.Size(26, 17);
-            this.status.Text = "Idle";
-            // 
-            // textureDisplay
-            // 
-            this.textureDisplay.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(240)))), ((int)(((byte)(240)))), ((int)(((byte)(240)))));
-            this.textureDisplay.Location = new System.Drawing.Point(74, 12);
-            this.textureDisplay.Name = "textureDisplay";
-            this.textureDisplay.Size = new System.Drawing.Size(350, 350);
-            this.textureDisplay.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
-            this.textureDisplay.TabIndex = 2;
-            this.textureDisplay.TabStop = false;
-            // 
-            // spriteDisplay
-            // 
-            this.spriteDisplay.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(240)))), ((int)(((byte)(240)))), ((int)(((byte)(240)))));
-            this.spriteDisplay.Location = new System.Drawing.Point(10, 12);
-            this.spriteDisplay.Name = "spriteDisplay";
-            this.spriteDisplay.Size = new System.Drawing.Size(350, 350);
-            this.spriteDisplay.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
-            this.spriteDisplay.TabIndex = 5;
-            this.spriteDisplay.TabStop = false;
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(800, 463);
-            this.Controls.Add(this.statusStrip1);
+            this.ClientSize = new System.Drawing.Size(800, 444);
             this.Controls.Add(this.tabControl1);
             this.Controls.Add(this.menuStrip1);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
@@ -641,6 +614,7 @@
             this.tabControl1.ResumeLayout(false);
             this.TXTRtab.ResumeLayout(false);
             this.groupBox2.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.textureDisplay)).EndInit();
             this.groupBox1.ResumeLayout(false);
             this.textureContextStrip.ResumeLayout(false);
             this.SPRTtab.ResumeLayout(false);
@@ -653,6 +627,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.wNum)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.yNum)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.xNum)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.spriteDisplay)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.spriteNum)).EndInit();
             this.groupBox6.ResumeLayout(false);
             this.spriteMenuStrip.ResumeLayout(false);
@@ -662,12 +637,8 @@
             ((System.ComponentModel.ISupportInitialize)(this.trackBar1)).EndInit();
             this.groupBox4.ResumeLayout(false);
             this.audioContextStrip.ResumeLayout(false);
-            this.statusStrip1.ResumeLayout(false);
-            this.statusStrip1.PerformLayout();
             this.STRGtab.ResumeLayout(false);
             this.stringListStrip.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.textureDisplay)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.spriteDisplay)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -686,8 +657,6 @@
         private System.Windows.Forms.ToolStripMenuItem saveTextureToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem exportAllTexturesToolStripMenuItem;
         private System.Windows.Forms.GroupBox groupBox2;
-        private System.Windows.Forms.StatusStrip statusStrip1;
-        private System.Windows.Forms.ToolStripProgressBar statusProgress;
         private System.Windows.Forms.TabPage AUDOtab;
         private System.Windows.Forms.GroupBox groupBox3;
         private System.Windows.Forms.GroupBox groupBox4;
@@ -727,7 +696,6 @@
         private System.Windows.Forms.ListBox stringList;
         private System.Windows.Forms.ContextMenuStrip stringListStrip;
         private System.Windows.Forms.ToolStripMenuItem exportAllStringsToolStripMenuItem;
-        private System.Windows.Forms.ToolStripStatusLabel status;
     }
 }
 
