@@ -165,17 +165,35 @@ namespace GM2Explorer
             uint sectLen = reader.ReadUInt32();
             reader.BaseStream.Seek(sectLen, SeekOrigin.Current);
             //OPTN
-            reader.BaseStream.Seek(4, SeekOrigin.Current);
-            sectLen = reader.ReadUInt32();
-            reader.BaseStream.Seek(sectLen, SeekOrigin.Current);
+            if (Encoding.UTF8.GetString(reader.ReadBytes(4)) == "OPTN")
+            {
+                sectLen = reader.ReadUInt32();
+                reader.BaseStream.Seek(sectLen, SeekOrigin.Current);
+            }
+            else
+            {
+                reader.BaseStream.Seek(-0x4, SeekOrigin.Current);
+            }
             //LANG
-            reader.BaseStream.Seek(4, SeekOrigin.Current);
-            sectLen = reader.ReadUInt32();
-            reader.BaseStream.Seek(sectLen, SeekOrigin.Current);
+            if (Encoding.UTF8.GetString(reader.ReadBytes(4)) == "LANG")
+            {
+                sectLen = reader.ReadUInt32();
+                reader.BaseStream.Seek(sectLen, SeekOrigin.Current);
+            }
+            else
+            {
+                reader.BaseStream.Seek(-0x4, SeekOrigin.Current);
+            }
             //EXTN
-            reader.BaseStream.Seek(4, SeekOrigin.Current);
-            sectLen = reader.ReadUInt32();
-            reader.BaseStream.Seek(sectLen, SeekOrigin.Current);
+            if (Encoding.UTF8.GetString(reader.ReadBytes(4)) == "EXTN")
+            {
+                sectLen = reader.ReadUInt32();
+                reader.BaseStream.Seek(sectLen, SeekOrigin.Current);
+            }
+            else
+            {
+                reader.BaseStream.Seek(-0x4, SeekOrigin.Current);
+            }
             //SOND
             reader.BaseStream.Seek(4, SeekOrigin.Current);
             sectLen = reader.ReadUInt32();
@@ -320,81 +338,158 @@ namespace GM2Explorer
             status.Text = "Finding next Section...";
             this.Enabled = false;
             //BGND
-            reader.BaseStream.Seek(4, SeekOrigin.Current);
-            sectLen = reader.ReadUInt32();
-            reader.BaseStream.Seek(sectLen, SeekOrigin.Current);
-            //PATH
-            reader.BaseStream.Seek(4, SeekOrigin.Current);
-            sectLen = reader.ReadUInt32();
-            reader.BaseStream.Seek(sectLen, SeekOrigin.Current);
-            //SCPT
-            reader.BaseStream.Seek(4, SeekOrigin.Current);
-            sectLen = reader.ReadUInt32();
-            reader.BaseStream.Seek(sectLen, SeekOrigin.Current);
-            //GLOB
-            reader.BaseStream.Seek(4, SeekOrigin.Current);
-            sectLen = reader.ReadUInt32();
-            reader.BaseStream.Seek(sectLen, SeekOrigin.Current);
-            //SHDR
-            reader.BaseStream.Seek(4, SeekOrigin.Current);
-            sectLen = reader.ReadUInt32();
-            reader.BaseStream.Seek(sectLen, SeekOrigin.Current);
-            //FONT
-            reader.BaseStream.Seek(4, SeekOrigin.Current);
-            sectLen = reader.ReadUInt32();
-            reader.BaseStream.Seek(sectLen, SeekOrigin.Current);
-            //TMLN
-            reader.BaseStream.Seek(4, SeekOrigin.Current);
-            sectLen = reader.ReadUInt32();
-            reader.BaseStream.Seek(sectLen, SeekOrigin.Current);
-            //OBJT
-            reader.BaseStream.Seek(4, SeekOrigin.Current);
-            sectLen = reader.ReadUInt32();
-            reader.BaseStream.Seek(sectLen, SeekOrigin.Current);
-            //ROOM
-            reader.BaseStream.Seek(4, SeekOrigin.Current);
-            sectLen = reader.ReadUInt32();
-            reader.BaseStream.Seek(sectLen, SeekOrigin.Current);
-            //DAFL
-            reader.BaseStream.Seek(4, SeekOrigin.Current);
-            sectLen = reader.ReadUInt32();
-            reader.BaseStream.Seek(sectLen, SeekOrigin.Current);
-            if (version == 2)
+            if (Encoding.UTF8.GetString(reader.ReadBytes(4)) == "BGND")
             {
-                //EMBI
-                reader.BaseStream.Seek(4, SeekOrigin.Current);
                 sectLen = reader.ReadUInt32();
                 reader.BaseStream.Seek(sectLen, SeekOrigin.Current);
+            }
+            else
+            {
+                reader.BaseStream.Seek(-0x4, SeekOrigin.Current);
+            }
+            //PATH
+            if (Encoding.UTF8.GetString(reader.ReadBytes(4)) == "PATH")
+            {
+                sectLen = reader.ReadUInt32();
+                reader.BaseStream.Seek(sectLen, SeekOrigin.Current);
+            }
+            else
+            {
+                reader.BaseStream.Seek(-0x4, SeekOrigin.Current);
+            }
+            //SCPT
+            if (Encoding.UTF8.GetString(reader.ReadBytes(4)) == "SCPT")
+            {
+                sectLen = reader.ReadUInt32();
+                reader.BaseStream.Seek(sectLen, SeekOrigin.Current);
+            }
+            else
+            {
+                reader.BaseStream.Seek(-0x4, SeekOrigin.Current);
+            }
+            //GLOB
+            if (Encoding.UTF8.GetString(reader.ReadBytes(4)) == "GLOB")
+            {
+                sectLen = reader.ReadUInt32();
+                reader.BaseStream.Seek(sectLen, SeekOrigin.Current);
+            }
+            else
+            {
+                reader.BaseStream.Seek(-0x4, SeekOrigin.Current);
+            }
+            //SHDR
+            if (Encoding.UTF8.GetString(reader.ReadBytes(4)) == "SHDR")
+            {
+                sectLen = reader.ReadUInt32();
+                reader.BaseStream.Seek(sectLen, SeekOrigin.Current);
+            }
+            else
+            {
+                reader.BaseStream.Seek(-0x4, SeekOrigin.Current);
+            }
+            //FONT
+            if (Encoding.UTF8.GetString(reader.ReadBytes(4)) == "FONT")
+            {
+                sectLen = reader.ReadUInt32();
+                reader.BaseStream.Seek(sectLen, SeekOrigin.Current);
+            }
+            else
+            {
+                reader.BaseStream.Seek(-0x4, SeekOrigin.Current);
+            }
+            //TMLN
+            if (Encoding.UTF8.GetString(reader.ReadBytes(4)) == "TMLN")
+            {
+                sectLen = reader.ReadUInt32();
+                reader.BaseStream.Seek(sectLen, SeekOrigin.Current);
+            }
+            else
+            {
+                reader.BaseStream.Seek(-0x4, SeekOrigin.Current);
+            }
+            //OBJT
+            if (Encoding.UTF8.GetString(reader.ReadBytes(4)) == "OBJT")
+            {
+                sectLen = reader.ReadUInt32();
+                reader.BaseStream.Seek(sectLen, SeekOrigin.Current);
+            }
+            else
+            {
+                reader.BaseStream.Seek(-0x4, SeekOrigin.Current);
+            }
+            //ROOM
+            if (Encoding.UTF8.GetString(reader.ReadBytes(4)) == "ROOM")
+            {
+                sectLen = reader.ReadUInt32();
+                reader.BaseStream.Seek(sectLen, SeekOrigin.Current);
+            }
+            else
+            {
+                reader.BaseStream.Seek(-0x4, SeekOrigin.Current);
+            }
+            //DAFL
+            if (Encoding.UTF8.GetString(reader.ReadBytes(4)) == "DAFL")
+            {
+                sectLen = reader.ReadUInt32();
+                reader.BaseStream.Seek(sectLen, SeekOrigin.Current);
+            }
+            else
+            {
+                reader.BaseStream.Seek(-0x4, SeekOrigin.Current);
+            }
+            //EMBI
+            if (Encoding.UTF8.GetString(reader.ReadBytes(4)) == "EMBI")
+            {
+                sectLen = reader.ReadUInt32();
+                reader.BaseStream.Seek(sectLen, SeekOrigin.Current);
+            }
+            else
+            {
+                reader.BaseStream.Seek(-0x4, SeekOrigin.Current);
             }
             //TPAG
-            reader.BaseStream.Seek(4, SeekOrigin.Current);
-            sectLen = reader.ReadUInt32();
-            reader.BaseStream.Seek(sectLen, SeekOrigin.Current);
-            if (version == 2)
+            if (Encoding.UTF8.GetString(reader.ReadBytes(4)) == "TPAG")
             {
-                if (Encoding.UTF8.GetString(reader.ReadBytes(4)) == "TGIN")
-                {
-                    //TGIN
-                    sectLen = reader.ReadUInt32();
-                    reader.BaseStream.Seek(sectLen, SeekOrigin.Current);
-                }
-                else
-                {
-                    reader.BaseStream.Seek(-0x4, SeekOrigin.Current);
-                }
+                sectLen = reader.ReadUInt32();
+                reader.BaseStream.Seek(sectLen, SeekOrigin.Current);
             }
-            //Sometimes these just aren't there for some reason
+            else
+            {
+                reader.BaseStream.Seek(-0x4, SeekOrigin.Current);
+            }
+            //TGIN
+            if (Encoding.UTF8.GetString(reader.ReadBytes(4)) == "TGIN")
+            {
+                sectLen = reader.ReadUInt32();
+                reader.BaseStream.Seek(sectLen, SeekOrigin.Current);
+            }
+            else
+            {
+                reader.BaseStream.Seek(-0x4, SeekOrigin.Current);
+            }
+            //CODE
             if (Encoding.UTF8.GetString(reader.ReadBytes(4)) == "CODE")
             {
-                //CODE
                 sectLen = reader.ReadUInt32();
                 reader.BaseStream.Seek(sectLen, SeekOrigin.Current);
-                //VARI
-                reader.BaseStream.Seek(4, SeekOrigin.Current);
+            }
+            else
+            {
+                reader.BaseStream.Seek(-0x4, SeekOrigin.Current);
+            }
+            //VARI
+            if (Encoding.UTF8.GetString(reader.ReadBytes(4)) == "VARI")
+            {
                 sectLen = reader.ReadUInt32();
                 reader.BaseStream.Seek(sectLen, SeekOrigin.Current);
-                //FUNC
-                reader.BaseStream.Seek(4, SeekOrigin.Current);
+            }
+            else
+            {
+                reader.BaseStream.Seek(-0x4, SeekOrigin.Current);
+            }
+            //FUNC
+            if (Encoding.UTF8.GetString(reader.ReadBytes(4)) == "FUNC")
+            {
                 sectLen = reader.ReadUInt32();
                 reader.BaseStream.Seek(sectLen, SeekOrigin.Current);
             }
