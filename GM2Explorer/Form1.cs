@@ -103,7 +103,7 @@ namespace GM2Explorer
             stringList.Items.Clear();
             this.Enabled = false;
             this.Cursor = Cursors.WaitCursor;
-            BinaryReader reader;
+            BinaryReader reader = null;
             string file = "";
             if (!path.EndsWith(".exe"))
             {
@@ -120,33 +120,42 @@ namespace GM2Explorer
             {
                 progress.SetText("Searching for data.win...");
                 reader = new BinaryReader(new FileStream(path, FileMode.Open));
-                while (reader.BaseStream.Position < reader.BaseStream.Length)
+                bool found = false;
+                while (reader.BaseStream.Position < reader.BaseStream.Length - 4)
                 {
-                    uint pos = (uint)reader.BaseStream.Position;
-                    string FORMmagic = Encoding.UTF8.GetString(reader.ReadBytes(4));
-                    reader.BaseStream.Seek(4, SeekOrigin.Current);
-                    string GEN8magic = Encoding.UTF8.GetString(reader.ReadBytes(4));
-                    if (FORMmagic == "FORM" && GEN8magic == "GEN8")
+                    long pos = reader.BaseStream.Position;
+                    byte[] FORMmagic = reader.ReadBytes(4);
+                    if (FORMmagic.SequenceEqual(new byte[] { 0x46, 0x4F, 0x52, 0x4D }))
                     {
-                        reader.BaseStream.Seek(pos + 4, SeekOrigin.Begin);
                         uint fileLength = reader.ReadUInt32() + 8;
-                        reader.BaseStream.Seek(pos, SeekOrigin.Current);
-                        if (Directory.Exists(@"C:\gmetemp"))
+                        byte[] GEN8magic = reader.ReadBytes(4);
+                        if (GEN8magic.SequenceEqual(new byte[] { 0x47, 0x45, 0x4E, 0x38 }))
                         {
-                            Directory.Delete(@"C:\gmetemp", true);
+                            reader.BaseStream.Seek(pos, SeekOrigin.Begin);
+                            if (Directory.Exists(@"C:\gmetemp"))
+                            {
+                                Directory.Delete(@"C:\gmetemp", true);
+                            }
+                            Directory.CreateDirectory(@"C:\gmetemp");
+                            File.WriteAllBytes(@"C:\gmetemp\tmp.win", reader.ReadBytes((int)fileLength));
+                            file = @"C:\gmetemp\tmp.win";
+                            found = true;
+                            break;
                         }
-                        Directory.CreateDirectory(@"C:\gmetemp");
-                        File.WriteAllBytes(@"C:\gmetemp\tmp.win", reader.ReadBytes((int)fileLength));
-                        file = @"C:\gmetemp\tmp.win";
-                        break;
                     }
+                }
+                if (!found)
+                {
+                    progress.Close();
+                    MessageBox.Show("Unable to find data.win");
+                    return;
                 }
             }
             reader = new BinaryReader(new FileStream(file, FileMode.Open));
             int texOffset = 0x8;
             reader.BaseStream.Seek(0x3C, SeekOrigin.Begin);
             uint version = reader.ReadUInt32();
-            reader.BaseStream.Seek(0x14, SeekOrigin.Begin);
+            reader.BaseStream.Seek(0x38, SeekOrigin.Begin);
             uint projnameoffset = reader.ReadUInt32();
             reader.BaseStream.Seek(projnameoffset - 4, SeekOrigin.Begin);
             string projname = Encoding.UTF8.GetString(reader.ReadBytes(reader.ReadInt32()));
