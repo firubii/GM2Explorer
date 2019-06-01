@@ -123,9 +123,9 @@ namespace GM2Explorer
                 while (reader.BaseStream.Position < reader.BaseStream.Length)
                 {
                     uint pos = (uint)reader.BaseStream.Position;
-                    string FORMmagic = string.Join("", reader.ReadChars(4));
+                    string FORMmagic = Encoding.UTF8.GetString(reader.ReadBytes(4));
                     reader.BaseStream.Seek(4, SeekOrigin.Current);
-                    string GEN8magic = string.Join("", reader.ReadChars(4));
+                    string GEN8magic = Encoding.UTF8.GetString(reader.ReadBytes(4));
                     if (FORMmagic == "FORM" && GEN8magic == "GEN8")
                     {
                         reader.BaseStream.Seek(pos + 4, SeekOrigin.Begin);
