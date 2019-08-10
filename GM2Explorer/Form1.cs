@@ -962,13 +962,22 @@ namespace GM2Explorer
 
         private void exportSpriteToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            bool exportSheet = false;
             SaveFileDialog save = new SaveFileDialog();
             save.Filter = "PNG Image File|*.png";
             save.DefaultExt = ".png";
             save.AddExtension = true;
             if (SPRTList[spriteList.SelectedIndex].sheet.Count > 1)
             {
-                save.FileName = SPRTList[spriteList.SelectedIndex].name + "_" + spriteNum.Value + ".png";
+                if (MessageBox.Show("This entry has multiple sprites.\nWould you like to export as a sprite sheet?", this.Text, MessageBoxButtons.YesNo) == DialogResult.Yes)
+                {
+                    save.FileName = SPRTList[spriteList.SelectedIndex].name + ".png";
+                    exportSheet = true;
+                }
+                else
+                {
+                    save.FileName = SPRTList[spriteList.SelectedIndex].name + "_" + spriteNum.Value + ".png";
+                }
             }
             else
             {
@@ -977,7 +986,47 @@ namespace GM2Explorer
             if (save.ShowDialog() == DialogResult.OK)
             {
                 SPRT sprt = SPRTList[spriteList.SelectedIndex];
-                Crop(TXTR[sprt.sheet[(int)spriteNum.Value]], new Rectangle((int)sprt.x[(int)spriteNum.Value], (int)sprt.y[(int)spriteNum.Value], (int)sprt.width[(int)spriteNum.Value], (int)sprt.height[(int)spriteNum.Value])).Save(save.FileName, System.Drawing.Imaging.ImageFormat.Png);
+                if (exportSheet)
+                {
+                    List<Bitmap> sprList = new List<Bitmap>();
+                    for (int t = 0; t < SPRTList[spriteList.SelectedIndex].sheet.Count; t++)
+                    {
+                        try
+                        {
+                            sprList.Add(Crop(TXTR[sprt.sheet[t]], new Rectangle((int)sprt.x[t], (int)sprt.y[t], (int)sprt.width[t], (int)sprt.height[t])));
+                        }
+                        catch { }
+                    }
+                    int h = 0;
+                    int w = 0;
+                    for (int t = 0; t < sprList.Count; t++)
+                    {
+                        if (sprList[t].Width > w) w = sprList[t].Width;
+                        if (sprList[t].Height > h) h = sprList[t].Height;
+                    }
+                    int wfull = w * sprList.Count;
+
+                    Bitmap finalImg = new Bitmap(wfull, h);
+                    int xOff = 0;
+                    for (int t = 0; t < sprList.Count; t++)
+                    {
+                        for (int y = 0; y < sprList[t].Height; y++)
+                        {
+                            for (int x = 0; x < sprList[t].Width; x++)
+                            {
+                                finalImg.SetPixel(x + (t * w), y + (h - sprList[t].Height), sprList[t].GetPixel(x, y));
+                            }
+                        }
+                    }
+
+                    finalImg.Save(save.FileName, System.Drawing.Imaging.ImageFormat.Png);
+                    finalImg.Dispose();
+                    sprList.Clear();
+                }
+                else
+                {
+                    Crop(TXTR[sprt.sheet[(int)spriteNum.Value]], new Rectangle((int)sprt.x[(int)spriteNum.Value], (int)sprt.y[(int)spriteNum.Value], (int)sprt.width[(int)spriteNum.Value], (int)sprt.height[(int)spriteNum.Value])).Save(save.FileName, System.Drawing.Imaging.ImageFormat.Png);
+                }
             }
         }
 
@@ -996,6 +1045,11 @@ namespace GM2Explorer
                 ProgressWindow progress = new ProgressWindow();
                 progress.Show();
                 progress.SetProgressMax(SPRTList.Count);
+
+                bool exportSheet = false;
+                if (MessageBox.Show("Would you like to export sprite sheets for sprites with multiple entries?", this.Text, MessageBoxButtons.YesNo) == DialogResult.Yes)
+                    exportSheet = true;
+
                 for (int i = 0; i < SPRTList.Count; i++)
                 {
                     progress.SetProgressValue(i);
@@ -1003,9 +1057,53 @@ namespace GM2Explorer
                     SPRT sprt = SPRTList[i];
                     if (SPRTList[i].sheet.Count > 1)
                     {
-                        for (int t = 0; t < SPRTList[i].sheet.Count; t++)
+                        if (exportSheet)
                         {
-                            Crop(TXTR[sprt.sheet[t]], new Rectangle((int)sprt.x[t], (int)sprt.y[t], (int)sprt.width[t], (int)sprt.height[t])).Save(Path.GetDirectoryName(save.FileName) + "\\" + SPRTList[i].name + "_" + t + ".png", System.Drawing.Imaging.ImageFormat.Png);
+                            List<Bitmap> sprList = new List<Bitmap>();
+                            for (int t = 0; t < SPRTList[i].sheet.Count; t++)
+                            {
+                                try
+                                {
+                                    sprList.Add(Crop(TXTR[sprt.sheet[t]], new Rectangle((int)sprt.x[t], (int)sprt.y[t], (int)sprt.width[t], (int)sprt.height[t])));
+                                }
+                                catch { }
+                            }
+                            int h = 0;
+                            int w = 0;
+                            for (int t = 0; t < sprList.Count; t++)
+                            {
+                                if (sprList[t].Width > w) w = sprList[t].Width;
+                                if (sprList[t].Height > h) h = sprList[t].Height;
+                            }
+                            int wfull = w * sprList.Count;
+                            
+                            Bitmap finalImg = new Bitmap(wfull, h);
+                            int xOff = 0;
+                            for (int t = 0; t < sprList.Count; t++)
+                            {
+                                for (int y = 0; y < sprList[t].Height; y++)
+                                {
+                                    for (int x = 0; x < sprList[t].Width; x++)
+                                    {
+                                        finalImg.SetPixel(x + (t * w), y + (h - sprList[t].Height), sprList[t].GetPixel(x, y));
+                                    }
+                                }
+                            }
+
+                            finalImg.Save(Path.GetDirectoryName(save.FileName) + "\\" + SPRTList[i].name + ".png", System.Drawing.Imaging.ImageFormat.Png);
+                            finalImg.Dispose();
+                            sprList.Clear();
+                        }
+                        else
+                        {
+                            for (int t = 0; t < SPRTList[i].sheet.Count; t++)
+                            {
+                                try
+                                {
+                                    Crop(TXTR[sprt.sheet[t]], new Rectangle((int)sprt.x[t], (int)sprt.y[t], (int)sprt.width[t], (int)sprt.height[t])).Save(Path.GetDirectoryName(save.FileName) + "\\" + SPRTList[i].name + "_" + t + ".png", System.Drawing.Imaging.ImageFormat.Png);
+                                }
+                                catch { }
+                            }
                         }
                     }
                     else
